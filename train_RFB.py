@@ -37,6 +37,7 @@ parser.add_argument('--num_workers', default=8,
 parser.add_argument('--cuda', default=True,
                     type=bool, help='Use cuda to train model')
 parser.add_argument('--ngpu', default=1, type=int, help='gpus')
+parser.add_argument('--gpu_ids', default='0', help='gpu_ids')
 parser.add_argument('--lr', '--learning-rate',
                     default=4e-3, type=float, help='initial learning rate')
 parser.add_argument('--momentum', default=0.9, type=float, help='momentum')
@@ -132,8 +133,12 @@ else:
         new_state_dict[name] = v
     net.load_state_dict(new_state_dict)
 
-if args.ngpu > 1:
-    net = torch.nn.DataParallel(net, device_ids=list(range(args.ngpu)))
+# if args.ngpu > 1:
+#     net = torch.nn.DataParallel(net, device_ids=list(range(args.ngpu)))
+if args.gpu_ids != '0':
+    gpu_list = [int(x) for x in args.gpu_ids.split(',')]
+    torch.cuda.device(gpu_list[0])
+    net = torch.nn.DataParallel(net, device_ids=gpu_list)
 
 if args.cuda:
     net.cuda()
@@ -207,7 +212,7 @@ def train():
 
         # load train data
         images, targets = next(batch_iterator)
-        
+
         #print(np.sum([torch.sum(anno[:,-1] == 2) for anno in targets]))
 
         if args.cuda:
@@ -233,7 +238,7 @@ def train():
             print('Epoch:' + repr(epoch) + ' || epochiter: ' + repr(iteration % epoch_size) + '/' + repr(epoch_size)
                   + '|| Totel iter ' +
                   repr(iteration) + ' || L: %.4f C: %.4f||' % (
-                loss_l.item(),loss_c.item()) + 
+                loss_l.item(),loss_c.item()) +
                 'Batch time: %.4f sec. ||' % (load_t1 - load_t0) + 'LR: %.8f' % (lr))
 
     torch.save(net.state_dict(), args.save_folder +
@@ -241,12 +246,12 @@ def train():
 
 
 def adjust_learning_rate(optimizer, gamma, epoch, step_index, iteration, epoch_size):
-    """Sets the learning rate 
+    """Sets the learning rate
     # Adapted from PyTorch Imagenet example:
     # https://github.com/pytorch/examples/blob/master/imagenet/main.py
     """
     if epoch < 6:
-        lr = 1e-6 + (args.lr-1e-6) * iteration / (epoch_size * 5) 
+        lr = 1e-6 + (args.lr-1e-6) * iteration / (epoch_size * 5)
     else:
         lr = args.lr * (gamma ** (step_index))
     for param_group in optimizer.param_groups:
