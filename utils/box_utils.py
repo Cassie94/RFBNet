@@ -85,7 +85,7 @@ def matrix_iou(a,b):
     return area_i / (area_a[:, np.newaxis] + area_b - area_i)
 
 
-def match(threshold, truths, priors, variances, labels, loc_t, conf_t, idx):
+def match(threshold, truths, priors, variances, labels, loc_t, conf_t, idx, ious=None):
     """Match each prior box with the ground truth box of the highest jaccard
     overlap, encode the bounding boxes, then return the matched indices
     corresponding to both confidence and location preds.
@@ -99,9 +99,21 @@ def match(threshold, truths, priors, variances, labels, loc_t, conf_t, idx):
         loc_t: (tensor) Tensor to be filled w/ endcoded location targets.
         conf_t: (tensor) Tensor to be filled w/ matched indices for conf preds.
         idx: (int) current batch index
+        ious: (tensor) Tensor to be filled w/ iou b/t prior boxes and ground
+            truth boxes.
+            Shape: [num_priors]
     Return:
         The matched indices corresponding to 1)location and 2)confidence preds.
     """
+    # set the threshold for different gt bboxes
+    thres_list = torch.zeros(best_truth_idx.shape)
+    gt_area = (truths[:,3]-truths[:,1])*(truths[:,2]-truths[:,0])
+    x = gt_area.cpu().numpy()
+    thres = torch.from_numpy(np.piecewise(x, [x <= 0.04, (x > .04) * (x <= .1), x > .1],
+        [.3, .5, .7]))
+    for i in range(len(labels)):
+        thres_list[thres_list==i] = thres[i]
+
     # jaccard index
     overlaps = jaccard(
         truths,
@@ -114,6 +126,8 @@ def match(threshold, truths, priors, variances, labels, loc_t, conf_t, idx):
     best_truth_overlap, best_truth_idx = overlaps.max(0, keepdim=True)
     best_truth_idx.squeeze_(0)
     best_truth_overlap.squeeze_(0)
+    if ious is not None:
+        ious[idx] = best_truth_overlap
     best_prior_idx.squeeze_(1)
     best_prior_overlap.squeeze_(1)
     best_truth_overlap.index_fill_(0, best_prior_idx, 2)  # ensure best prior
@@ -123,7 +137,8 @@ def match(threshold, truths, priors, variances, labels, loc_t, conf_t, idx):
         best_truth_idx[best_prior_idx[j]] = j
     matches = truths[best_truth_idx]          # Shape: [num_priors,4]
     conf = labels[best_truth_idx]          # Shape: [num_priors]
-    conf[best_truth_overlap < threshold] = 0  # label as background
+    # conf[best_truth_overlap < threshold] = 0  # label as background
+    conf[best_truth_overlap < thres_list.type_as(best_truth_overlap)] = 0
     loc = encode(matches, priors, variances)
     loc_t[idx] = loc    # [num_priors,4] encoded offsets to learn
     conf_t[idx] = conf  # [num_priors] top class label for each prior
