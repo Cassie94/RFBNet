@@ -106,7 +106,7 @@ def match(threshold, truths, priors, variances, labels, loc_t, conf_t, idx, ious
         The matched indices corresponding to 1)location and 2)confidence preds.
     """
     # set the threshold for different gt bboxes
-    thres_list = torch.zeros(best_truth_idx.shape)
+    thres_list = torch.zeros(priors.shape[0])
     gt_area = (truths[:,3]-truths[:,1])*(truths[:,2]-truths[:,0])
     x = gt_area.cpu().numpy()
     thres = torch.from_numpy(np.piecewise(x, [x <= 0.04, (x > .04) * (x <= .1), x > .1],
