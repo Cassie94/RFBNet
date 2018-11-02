@@ -142,7 +142,7 @@ def match(threshold, truths, priors, variances, labels, loc_t, conf_t, idx, ious
     loc = encode(matches, priors, variances)
     loc_t[idx] = loc    # [num_priors,4] encoded offsets to learn
     conf_t[idx] = conf  # [num_priors] top class label for each prior
-    pdb.set_trace()
+    # pdb.set_trace()
 
 def encode(matched, priors, variances):
     """Encode the variances from the priorbox layers into the ground truth boxes
