@@ -133,8 +133,9 @@ else:
         new_state_dict[name] = v
     net.load_state_dict(new_state_dict)
 
-# if args.ngpu > 1:
-#     net = torch.nn.DataParallel(net, device_ids=list(range(args.ngpu)))
+if args.ngpu > 1:
+    net = torch.nn.DataParallel(net, device_ids=list(range(args.ngpu)))
+    
 if args.gpu_ids != '0':
     gpu_list = [int(x) for x in args.gpu_ids.split(',')]
     torch.cuda.device(gpu_list[0])
