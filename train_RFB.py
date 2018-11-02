@@ -15,6 +15,7 @@ from data import VOCroot, COCOroot, VOC_300, VOC_512, COCO_300, COCO_512, COCO_m
 from layers.modules import MultiBoxLoss
 from layers.functions import PriorBox
 import time
+import pdb
 
 
 parser = argparse.ArgumentParser(
@@ -226,6 +227,7 @@ def train():
             targets = [Variable(anno) for anno in targets]
         # forward
         t0 = time.time()
+        pdb.set_trace()
         out = net(images)
         # backprop
         optimizer.zero_grad()
