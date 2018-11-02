@@ -135,7 +135,7 @@ else:
 
 if args.ngpu > 1:
     net = torch.nn.DataParallel(net, device_ids=list(range(args.ngpu)))
-    
+
 if args.gpu_ids != '0':
     gpu_list = [int(x) for x in args.gpu_ids.split(',')]
     torch.cuda.device(gpu_list[0])
@@ -228,7 +228,7 @@ def train():
             targets = [Variable(anno) for anno in targets]
         # forward
         t0 = time.time()
-        pdb.set_trace()
+        # pdb.set_trace()
         out = net(images)
         # backprop
         optimizer.zero_grad()
