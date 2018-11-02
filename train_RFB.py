@@ -1,4 +1,3 @@
-# try something
 from __future__ import print_function
 import sys
 import os
@@ -170,9 +169,13 @@ def train():
     if args.dataset == 'VOC':
         dataset = VOCDetection(VOCroot, train_sets, preproc(
             img_dim, rgb_means, p), AnnotationTransform())
+        testset = VOCDetection(VOCroot,
+            [('2007', 'test')], None, AnnotationTransform())
     elif args.dataset == 'COCO':
         dataset = COCODetection(COCOroot, train_sets, preproc(
             img_dim, rgb_means, p))
+        testset = COCODetection(
+            COCOroot, [('2014', 'minival')], None)
     else:
         print('Only VOC and COCO are supported now!')
         return
@@ -234,7 +237,7 @@ def train():
         loc_loss += loss_l.item()
         conf_loss += loss_c.item()
         load_t1 = time.time()
-        if iteration % 10 == 0:
+        if iteration % 100 == 0:
             print('Epoch:' + repr(epoch) + ' || epochiter: ' + repr(iteration % epoch_size) + '/' + repr(epoch_size)
                   + '|| Totel iter ' +
                   repr(iteration) + ' || L: %.4f C: %.4f||' % (
