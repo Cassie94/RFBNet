@@ -138,7 +138,7 @@ if args.ngpu > 1:
 
 if args.gpu_ids != '0':
     gpu_list = [int(x) for x in args.gpu_ids.split(',')]
-    torch.cuda.device(gpu_list[0])
+    torch.cuda.set_device(gpu_list[0])
     net = torch.nn.DataParallel(net, device_ids=gpu_list)
 
 if args.cuda:

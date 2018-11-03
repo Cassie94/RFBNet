@@ -9,7 +9,7 @@ import torch.backends.cudnn as cudnn
 import torchvision.transforms as transforms
 import numpy as np
 from torch.autograd import Variable
-from data import VOCroot,COCOroot 
+from data import VOCroot,COCOroot
 from data import AnnotationTransform, COCODetection, VOCDetection, BaseTransform, VOC_300,VOC_512,COCO_300,COCO_512, COCO_mobile_300
 
 import torch.utils.data as data
@@ -31,12 +31,15 @@ parser.add_argument('--save_folder', default='eval/', type=str,
                     help='Dir to save results')
 parser.add_argument('--cuda', default=True, type=bool,
                     help='Use cuda to train model')
+parser.add_argument('--gpu', default=0, type=int,
+                    help='GPU id to use')
 parser.add_argument('--cpu', default=False, type=bool,
                     help='Use cpu nms')
 parser.add_argument('--retest', default=False, type=bool,
                     help='test cache results')
 args = parser.parse_args()
-
+# gpu_id = args.gpu
+# torch.cuda.set_device(gpu_id)
 if not os.path.exists(args.save_folder):
     os.mkdir(args.save_folder)
 

@@ -110,7 +110,7 @@ def match(threshold, truths, priors, variances, labels, loc_t, conf_t, idx, ious
     gt_area = (truths[:,3]-truths[:,1])*(truths[:,2]-truths[:,0])
     x = gt_area.cpu().numpy()
     thres = torch.from_numpy(np.piecewise(x, [x <= 0.04, (x > .04) * (x <= .1), x > .1],
-        [.3, .5, .7]))
+        [.3, .5, .5]))
     for i in range(len(labels)):
         thres_list[thres_list==i] = thres[i]
 
