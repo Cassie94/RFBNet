@@ -16,7 +16,9 @@ from layers.modules import MultiBoxLoss
 from layers.functions import PriorBox
 import time
 import pdb
-
+import resource
+rlimit = resource.getrlimit(resource.RLIMIT_NOFILE)
+resource.setrlimit(resource.RLIMIT_NOFILE, (4096, rlimit[1]))
 
 parser = argparse.ArgumentParser(
     description='Receptive Field Block Net Training')
