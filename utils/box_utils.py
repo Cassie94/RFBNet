@@ -69,7 +69,7 @@ def jaccard(box_a, box_b):
               (box_a[:, 3]-box_a[:, 1])).unsqueeze(1).expand_as(inter)  # [A,B]
     area_b = ((box_b[:, 2]-box_b[:, 0]) *
               (box_b[:, 3]-box_b[:, 1])).unsqueeze(0).expand_as(inter)  # [A,B]
-    union = area_a + area_b - inter
+    union = 5*area_a + 0.5*area_b - 4.5*inter
     return inter / union  # [A,B]
 
 def matrix_iou(a,b):
@@ -110,7 +110,7 @@ def match(threshold, truths, priors, variances, labels, loc_t, conf_t, idx, ious
     gt_area = (truths[:,3]-truths[:,1])*(truths[:,2]-truths[:,0])
     x = gt_area.cpu().numpy()
     thres = torch.from_numpy(np.piecewise(x, [x <= 0.015, (x > .04) * (x <= .4), x > .1],
-        [.3, .5, .7]))
+        [.5, .5, .5]))
     for i in range(len(labels)):
         thres_list[thres_list==i] = thres[i]
 
