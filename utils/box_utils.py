@@ -69,7 +69,7 @@ def jaccard(box_a, box_b):
               (box_a[:, 3]-box_a[:, 1])).unsqueeze(1).expand_as(inter)  # [A,B]
     area_b = ((box_b[:, 2]-box_b[:, 0]) *
               (box_b[:, 3]-box_b[:, 1])).unsqueeze(0).expand_as(inter)  # [A,B]
-    union = 2*area_a + 0.5*area_b - 1.5*inter
+    union = 5*area_a + 0.5*area_b - 4.5*inter
     return inter / union  # [A,B]
 
 def matrix_iou(a,b):
