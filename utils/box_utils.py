@@ -87,8 +87,8 @@ def matrix_iou(a,b):
     return area_i / (area_a[:, np.newaxis] + area_b - area_i)
 
 
-def match(threshold, size_range, truths, priors, variances, labels, \
-    loc_t, conf_t, idx, iou_param, ious=None):
+def match(threshold, size_range, iou_param， truths, priors, variances, labels, \
+    loc_t, conf_t, idx, ious=None):
     """Match each prior box with the ground truth box of the highest jaccard
     overlap, encode the bounding boxes, then return the matched indices
     corresponding to both confidence and location preds.
