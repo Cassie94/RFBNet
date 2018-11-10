@@ -33,7 +33,8 @@ class MultiBoxLoss(nn.Module):
     """
 
 
-    def __init__(self, num_classes,overlap_thresh,prior_for_matching,bkg_label,neg_mining,neg_pos,neg_overlap,encode_target):
+    def __init__(self, num_classes,overlap_thresh,prior_for_matching,bkg_label,\
+        neg_mining,neg_pos,neg_overlap,encode_target, size_range, iou_param):
         super(MultiBoxLoss, self).__init__()
         self.num_classes = num_classes
         self.threshold = overlap_thresh
@@ -44,6 +45,8 @@ class MultiBoxLoss(nn.Module):
         self.negpos_ratio = neg_pos
         self.neg_overlap = neg_overlap
         self.variance = [0.1,0.2]
+        self.size_range = size_range
+        self.iou_param = iou_param
 
     def forward(self, predictions, priors, targets):
         """Multibox Loss
@@ -72,7 +75,8 @@ class MultiBoxLoss(nn.Module):
             truths = targets[idx][:,:-1].data
             labels = targets[idx][:,-1].data
             defaults = priors.data
-            match(self.threshold,truths,defaults,self.variance,labels,loc_t,conf_t,idx,ious)
+            match(self.threshold,size_range,iou_param,truths,defaults,\
+                self.variance,labels,loc_t,conf_t,idx,ious)
         if GPU:
             loc_t = loc_t.cuda()
             conf_t = conf_t.cuda()
@@ -95,6 +99,7 @@ class MultiBoxLoss(nn.Module):
         loss_c = log_sum_exp(batch_conf) - batch_conf.gather(1, conf_t.view(-1,1))
 
         # Hard Negative Mining
+        pdb.set_trace()
         loss_c[pos.view(-1,1)] = 0 # filter out pos boxes for now
         loss_c = loss_c.view(num, -1)
         _,loss_idx = loss_c.sort(1, descending=True)
@@ -109,7 +114,6 @@ class MultiBoxLoss(nn.Module):
         conf_p = conf_data[(pos_idx+neg_idx).gt(0)].view(-1,self.num_classes)
         targets_weighted = conf_t[(pos+neg).gt(0)]
         loss_c = F.cross_entropy(conf_p, targets_weighted, size_average=False)
-        # pdb.set_trace()
 
         # Sum of losses: L(x,c,l,g) = (Lconf(x, c) + αLloc(x,l,g)) / N
 

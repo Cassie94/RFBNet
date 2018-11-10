@@ -30,8 +30,12 @@ parser.add_argument('-d', '--dataset', default='VOC',
                     help='VOC or COCO dataset')
 parser.add_argument(
     '--basenet', default='./weights/vgg16_reducedfc.pth', help='pretrained base model')
-parser.add_argument('--jaccard_threshold', default=0.5,
-                    type=float, help='Min Jaccard index for matching')
+parser.add_argument('--size_range', default='0.02,0.4',
+                    type=str, help='The size range for small/medium/large')
+parser.add_argument('--iou_threshold', default='0.5,0.5,0.5',
+                    type=str, help='Min Jaccard index for matching')
+parser.add_argument('--iou_param', default='1,1',
+                    type=str, help='iou parameters (alpha, beta)')
 parser.add_argument('-b', '--batch_size', default=32,
                     type=int, help='Batch size for training')
 parser.add_argument('--num_workers', default=8,
@@ -59,6 +63,17 @@ parser.add_argument('--save_folder', default='./weights/',
                     help='Location to save checkpoint models')
 args = parser.parse_args()
 
+iou_thres_list = [float(x) for x in args.iou_threshold.split(',')]
+if len(iou_thres_list)==1:
+    iou_thres_list = 3* iou_thres_list
+else:
+    assert len(iou_thres_list) == 3
+
+iou_param = [float(x) for x in args.iou_param.split(',')]
+assert len(iou_param) == 2
+
+size_range = [float(x) for x in args.size_range.split(',')]
+assert len(size_range) == 2
 
 if not os.path.exists(args.save_folder):
     os.mkdir(args.save_folder)
@@ -153,7 +168,8 @@ optimizer = optim.SGD(net.parameters(), lr=args.lr,
 #optimizer = optim.RMSprop(net.parameters(), lr=args.lr,alpha = 0.9, eps=1e-08,
 #                      momentum=args.momentum, weight_decay=args.weight_decay)
 
-criterion = MultiBoxLoss(num_classes, 0.5, True, 0, True, 3, 0.5, False)
+criterion = MultiBoxLoss(num_classes, iou_thres_list, True, 0, True, 3, 0.5, \
+    False, size_range, iou_param)
 priorbox = PriorBox(cfg)
 with torch.no_grad():
     priors = priorbox.forward()

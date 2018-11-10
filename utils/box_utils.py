@@ -87,12 +87,15 @@ def matrix_iou(a,b):
     return area_i / (area_a[:, np.newaxis] + area_b - area_i)
 
 
-def match(threshold, truths, priors, variances, labels, loc_t, conf_t, idx, ious=None):
+def match(threshold, size_range, truths, priors, variances, labels, \
+    loc_t, conf_t, idx, iou_param, ious=None):
     """Match each prior box with the ground truth box of the highest jaccard
     overlap, encode the bounding boxes, then return the matched indices
     corresponding to both confidence and location preds.
     Args:
-        threshold: (float) The overlap threshold used when mathing boxes.
+        threshold: (list(float)) The overlap threshold used when mathing boxes,
+            different iou for small/medium/large objects.
+        size_range: (list(float)) The size range for small/medium/large objects.
         truths: (tensor) Ground truth boxes, Shape: [num_obj, num_priors].
         priors: (tensor) Prior boxes from priorbox layers, Shape: [n_priors,4].
         variances: (tensor) Variances corresponding to each prior coord,
@@ -101,28 +104,15 @@ def match(threshold, truths, priors, variances, labels, loc_t, conf_t, idx, ious
         loc_t: (tensor) Tensor to be filled w/ endcoded location targets.
         conf_t: (tensor) Tensor to be filled w/ matched indices for conf preds.
         idx: (int) current batch index
+        iou_param: (list(tensor)) Alpha,Beta for weighted iou.
         ious: (tensor) Tensor to be filled w/ iou b/t prior boxes and ground
-            truth boxes.
-            Shape: [num_priors]
+            truth boxes, Shape: [num_priors]
     Return:
         The matched indices corresponding to 1)location and 2)confidence preds.
     """
-    # set the threshold for different gt bboxes
-    thres_list = torch.zeros(priors.shape[0])
-    gt_area = (truths[:,3]-truths[:,1])*(truths[:,2]-truths[:,0])
-    x = gt_area.cpu().numpy()
-    small_area = .015
-    big_area = .4
-    thres = torch.from_numpy(np.piecewise(x, [x <= small_area,
-        (x > small_area) * (x <= big_area), x > big_area], [.3, .5, .5]))
-    for i in range(len(labels)):
-        thres_list[thres_list==i] = thres[i]
-
     # jaccard index
-    overlaps = jaccard(
-        truths,
-        point_form(priors)
-    )
+    asser len(iou_param) == 2
+    overlaps = jaccard(truths, point_form(priors), iou_param[0], iou_param[1])
     # (Bipartite Matching)
     # [1,num_objects] best prior for each ground truth
     best_prior_overlap, best_prior_idx = overlaps.max(1, keepdim=True)
@@ -142,6 +132,18 @@ def match(threshold, truths, priors, variances, labels, loc_t, conf_t, idx, ious
     matches = truths[best_truth_idx]          # Shape: [num_priors,4]
     conf = labels[best_truth_idx]          # Shape: [num_priors]
     # conf[best_truth_overlap < threshold] = 0  # label as background
+    # set the threshold for different gt bboxes
+    # thres_list = torch.zeros(priors.shape[0])
+    assert size_range[0] < size_range[1]
+    assert len(threshold) == 3
+    gt_area = (truths[:,3]-truths[:,1])*(truths[:,2]-truths[:,0])
+    x = gt_area.cpu().numpy()
+    thres = torch.from_numpy(np.piecewise(x, [x <= size_range[0],
+        (x > size_range[0]) * (x <= size_range[1]), x > size_range[1]], threshold))
+    thres_list = thres[best_truth_idx]
+    # for i in range(len(labels)):
+    #     thres_list[thres_list==i] = thres[i]
+
     conf[best_truth_overlap < thres_list.type_as(best_truth_overlap)] = 0
     loc = encode(matches, priors, variances)
     loc_t[idx] = loc    # [num_priors,4] encoded offsets to learn

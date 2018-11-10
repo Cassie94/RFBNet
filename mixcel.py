@@ -64,13 +64,41 @@ ax = sns.violinplot(x="size_index", y="2_0.5", data=iou_df);plt.show()
 ax = sns.boxplot(x="size_index", y="2_0.5", data=iou_df)
 ax = sns.swarmplot(x="size_index", y="2_0.5", data=iou_df, color=".25");plt.show()
 
+import pandas as pd
+import seaborn as sns
+import numpy as np
+import sys,os
+
 # subplot
-f, axes = plt.subplots(3, 3, figsize=(15, 15), sharex=True)
+f, axes = plt.subplots(3, 3, figsize=(9,9), sharex=True)
 sns.despine(left=True)
 for i in range(1,10):
     sns.boxplot(x="size_index", y=iou_df.columns[i], data=iou_df, ax=axes[(i-1)//3,(i-1)%3])
+plt.show()
 
 iou_des_dict = {}
+sudo add-apt-repository \
+   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+   $(lsb_release -cs) \
+   stable"
+
+CUDA_VISIBLE_DIVICES=2 python test_RFB.py -m /home/chenhao/hao-rfb/weights/weighted-2-0.5-60b/RFB_vgg_VOC_epoches_220.pth
+--save_folder eval/weighted_2_0.5_220epo/  >> weighted_2_0.5_250epo.txt &
+CUDA_VISIBLE_DIVICES=2 python test_RFB.py -m /home/chenhao/hao-rfb/weights/2-.5-soft-.3-58b/RFB_vgg_VOC_epoches_250.pth \
+--save_folder eval/2-.5-soft-.3-58b/ >> weighted_2-.5-soft-.3-58b.txt & \
+CUDA_VISIBLE_DIVICES=3 python test_RFB.py -m /home/chenhao/hao-rfb/weights/weighted_iou_58b/RFB_vgg_VOC_epoches_250.pth \
+--save_folder eval/weighted_5_0.5/ >> weighted_5_0.5_250epo.txt &
+CUDA_VISIBLE_DIVICES=3 python test_RFB.py -m /home/chenhao/hao-rfb/weights/64b/RFB_vgg_VOC_epoches_250.pth \
+--save_folder eval/64b/ --retest True
+
+df_50 = pd.DataFrame()
+df_50['ratio']=iou_des_dict['1_1']['ratio']
+df_50['cumsum']=iou_des_dict['1_1']['cumsum']
+key_list = ['1_0.5', '1_1', '2_0.5', '5_0.5']
+for k in key_list:
+    df_50[k] = iou_des_dict[k]['50%']
+df_50.round(3)
+
 for ii in iou_df.columns[1:10]:
     iou_des_dict[ii] = iou_df.groupby('size_range')[ii].describe()
     iou_des_dict[ii].insert(loc=0, column='ratio',
