@@ -111,7 +111,7 @@ def match(threshold, size_range, truths, priors, variances, labels, \
         The matched indices corresponding to 1)location and 2)confidence preds.
     """
     # jaccard index
-    asser len(iou_param) == 2
+    assert len(iou_param) == 2
     overlaps = jaccard(truths, point_form(priors), iou_param[0], iou_param[1])
     # (Bipartite Matching)
     # [1,num_objects] best prior for each ground truth
