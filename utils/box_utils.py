@@ -86,8 +86,9 @@ def matrix_iou(a,b):
     area_b = np.prod(b[:, 2:] - b[:, :2], axis=1)
     return area_i / (area_a[:, np.newaxis] + area_b - area_i)
 
-
-def match(threshold, size_range, iou_param，truths, priors, variances, labels, \
+# def match(threshold, size_range, iou_param，truths, priors, variances, labels, \
+#     loc_t, conf_t, idx, ious=None):
+def match(threshold, size_range, iou_param, truths, priors, variances, labels, \
     loc_t, conf_t, idx, ious=None):
     """Match each prior box with the ground truth box of the highest jaccard
     overlap, encode the bounding boxes, then return the matched indices
@@ -96,6 +97,7 @@ def match(threshold, size_range, iou_param，truths, priors, variances, labels, 
         threshold: (list(float)) The overlap threshold used when mathing boxes,
             different iou for small/medium/large objects.
         size_range: (list(float)) The size range for small/medium/large objects.
+        iou_param: (list(tensor)) Alpha,Beta for weighted iou.
         truths: (tensor) Ground truth boxes, Shape: [num_obj, num_priors].
         priors: (tensor) Prior boxes from priorbox layers, Shape: [n_priors,4].
         variances: (tensor) Variances corresponding to each prior coord,
@@ -104,7 +106,6 @@ def match(threshold, size_range, iou_param，truths, priors, variances, labels, 
         loc_t: (tensor) Tensor to be filled w/ endcoded location targets.
         conf_t: (tensor) Tensor to be filled w/ matched indices for conf preds.
         idx: (int) current batch index
-        iou_param: (list(tensor)) Alpha,Beta for weighted iou.
         ious: (tensor) Tensor to be filled w/ iou b/t prior boxes and ground
             truth boxes, Shape: [num_priors]
     Return:
