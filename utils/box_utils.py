@@ -86,8 +86,6 @@ def matrix_iou(a,b):
     area_b = np.prod(b[:, 2:] - b[:, :2], axis=1)
     return area_i / (area_a[:, np.newaxis] + area_b - area_i)
 
-# def match(threshold, size_range, iou_param，truths, priors, variances, labels, \
-#     loc_t, conf_t, idx, ious=None):
 def match(threshold, size_range, iou_param, truths, priors, variances, labels, \
     loc_t, conf_t, idx, ious=None):
     """Match each prior box with the ground truth box of the highest jaccard
