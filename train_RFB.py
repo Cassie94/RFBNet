@@ -44,7 +44,7 @@ parser.add_argument('--cuda', default=True,
                     type=bool, help='Use cuda to train model')
 parser.add_argument('--ngpu', default=1, type=int, help='gpus')
 parser.add_argument('--gpu_ids', default='0', help='gpu_ids')
-parser.add_argument('-lr', '--learning-rate',
+parser.add_argument('--lr', '--learning-rate',
                     default=4e-3, type=float, help='initial learning rate')
 parser.add_argument('--momentum', default=0.9, type=float, help='momentum')
 parser.add_argument(
