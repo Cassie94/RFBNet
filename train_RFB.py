@@ -1,4 +1,4 @@
-from __future__ import print_function
+save_folderfrom __future__ import print_function
 import sys
 import os
 import torch
@@ -30,7 +30,7 @@ parser.add_argument('-d', '--dataset', default='VOC',
                     help='VOC or COCO dataset')
 parser.add_argument(
     '--basenet', default='./weights/vgg16_reducedfc.pth', help='pretrained base model')
-parser.add_argument('--size_range', default='0.02,0.4',
+parser.add_argument('--save_folderge', default='0.02,0.4',
                     type=str, help='The size range for small/medium/large')
 parser.add_argument('--iou_threshold', default='0.5,0.5,0.5',
                     type=str, help='Min Jaccard index for matching')
@@ -76,7 +76,7 @@ size_range = [float(x) for x in args.size_range.split(',')]
 assert len(size_range) == 2
 
 save_folder = os.path.join('weights', time.strftime("%Y%m%d-%H%M%S")+
-    '-'.join([args.batch_size, args.iou_threshold,args.iou_param,args.range]))
+    '-'.join([args.batch_size, args.iou_threshold,args.iou_param,args.size_range]))
 # if not os.path.exists(args.save_folder):
 #     os.mkdir(args.save_folder)
 if not os.path.exists(save_folder):
