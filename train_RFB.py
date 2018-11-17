@@ -44,7 +44,7 @@ parser.add_argument('--cuda', default=True,
                     type=bool, help='Use cuda to train model')
 parser.add_argument('--ngpu', default=1, type=int, help='gpus')
 parser.add_argument('--gpu_ids', default='0', help='gpu_ids')
-parser.add_argument('--lr', '--learning-rate',
+parser.add_argument('-lr', '--learning-rate',
                     default=4e-3, type=float, help='initial learning rate')
 parser.add_argument('--momentum', default=0.9, type=float, help='momentum')
 parser.add_argument(
@@ -75,8 +75,12 @@ assert len(iou_param) == 2
 size_range = [float(x) for x in args.size_range.split(',')]
 assert len(size_range) == 2
 
-if not os.path.exists(args.save_folder):
-    os.mkdir(args.save_folder)
+save_folder = os.path.join('weights', time.strftime("%Y%m%d-%H%M%S")+
+    '-'.join([args.batch_size, args.iou_threshold,args.iou_param,args.range]))
+# if not os.path.exists(args.save_folder):
+#     os.mkdir(args.save_folder)
+if not os.path.exists(save_folder):
+    os.mkdir(save_folder)
 
 if args.dataset == 'VOC':
     train_sets = [('2007', 'trainval'), ('2012', 'trainval')]
@@ -224,7 +228,7 @@ def train():
             loc_loss = 0
             conf_loss = 0
             if (epoch % 10 == 0 and epoch > 0) or (epoch % 5 ==0 and epoch > 200):
-                torch.save(net.state_dict(), args.save_folder+args.version+'_'+args.dataset + '_epoches_'+
+                torch.save(net.state_dict(), save_folder+args.version+'_'+args.dataset + '_epoches_'+
                            repr(epoch) + '.pth')
             epoch += 1
 
@@ -266,7 +270,7 @@ def train():
                 loss_l.item(),loss_c.item()) +
                 'Batch time: %.4f sec. ||' % (load_t1 - load_t0) + 'LR: %.8f' % (lr))
 
-    torch.save(net.state_dict(), args.save_folder +
+    torch.save(net.state_dict(), save_folder +
                'Final_' + args.version +'_' + args.dataset+ '.pth')
 
 
