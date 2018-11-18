@@ -22,6 +22,7 @@ def parse_rec(filename):
         obj_struct['pose'] = obj.find('pose').text
         obj_struct['truncated'] = int(obj.find('truncated').text)
         obj_struct['difficult'] = int(obj.find('difficult').text)
+        obj_struct['img_size'] = size
         bbox = obj.find('bndbox')
         obj_struct['bbox'] = [int(bbox.find('xmin').text),
                               int(bbox.find('ymin').text),
@@ -134,6 +135,7 @@ def voc_eval(detpath,
         bbox = np.array([x['bbox'] for x in R])
         difficult = np.array([x['difficult'] for x in R]).astype(np.bool)
         size = np.array([x['size'] for x in R])
+        img_size = np.array(R[0]['img_size'])
         det = [False] * len(R)
         npos = npos + sum(~difficult)
         class_recs[imagename] = {'bbox': bbox,
@@ -163,11 +165,13 @@ def voc_eval(detpath,
     nd = len(image_ids)
     tp = np.zeros(nd)
     fp = np.zeros(nd)
+    obj_size = np.zeros(nd)
     for d in range(nd):
         R = class_recs[image_ids[d]]
         bb = BB[d, :].astype(float)
         ovmax = -np.inf
         BBGT = R['bbox'].astype(float)
+        img_size = R['img_size'].astype(float)
 
         if BBGT.size > 0:
             # compute overlaps
@@ -188,6 +192,9 @@ def voc_eval(detpath,
             overlaps = inters / uni
             ovmax = np.max(overlaps)
             jmax = np.argmax(overlaps)
+            obj_size[d] = R['size'][jmax]
+        else:
+            obj_size[d] = (bb[2] - bb[0]) * (bb[3] - bb[1])
 
         if ovmax > ovthresh:
             if not R['difficult'][jmax]:
