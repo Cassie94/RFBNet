@@ -135,13 +135,14 @@ def voc_eval(detpath,
         bbox = np.array([x['bbox'] for x in R])
         difficult = np.array([x['difficult'] for x in R]).astype(np.bool)
         size = np.array([x['size'] for x in R])
-        img_size = np.array(R[0]['img_size'])
+        img_size = recs[imagename][0]['img_size']
         det = [False] * len(R)
         npos = npos + sum(~difficult)
         class_recs[imagename] = {'bbox': bbox,
                                  'difficult': difficult,
                                  'det': det,
-                                 'size': size}
+                                 'size': size,
+                                 'img_size': img_size}
 
     # read dets
     detfile = detpath.format(classname)
@@ -171,7 +172,7 @@ def voc_eval(detpath,
         bb = BB[d, :].astype(float)
         ovmax = -np.inf
         BBGT = R['bbox'].astype(float)
-        img_size = R['img_size'].astype(float)
+        img_size = R['img_size']
 
         if BBGT.size > 0:
             # compute overlaps
@@ -194,7 +195,7 @@ def voc_eval(detpath,
             jmax = np.argmax(overlaps)
             obj_size[d] = R['size'][jmax]
         else:
-            obj_size[d] = (bb[2] - bb[0]) * (bb[3] - bb[1])
+            obj_size[d] = (bb[2] - bb[0]) * (bb[3] - bb[1]) / (img_size[0] * img_size[1])
 
         if ovmax > ovthresh:
             if not R['difficult'][jmax]:
