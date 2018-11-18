@@ -14,6 +14,7 @@ from IPython import embed
 def parse_rec(filename):
     """ Parse a PASCAL VOC xml file """
     tree = ET.parse(filename)
+    size = [float(xx.text) for x in ['width', 'height'] for xx in tree.iter(x)]
     objects = []
     for obj in tree.findall('object'):
         obj_struct = {}
@@ -26,6 +27,8 @@ def parse_rec(filename):
                               int(bbox.find('ymin').text),
                               int(bbox.find('xmax').text),
                               int(bbox.find('ymax').text)]
+        obj_struct['size'] = (obj_struct['bbox'][2] - obj_struct['bbox'][0]) * \
+            (obj_struct['bbox'][3] - obj_struct['bbox'][1]) / (size[0] * size[1])
         objects.append(obj_struct)
 
     return objects
