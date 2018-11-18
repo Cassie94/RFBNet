@@ -9,7 +9,7 @@ import os
 import pickle
 import numpy as np
 import pdb
-import IPython import embed
+from IPython import embed
 
 def parse_rec(filename):
     """ Parse a PASCAL VOC xml file """
@@ -142,7 +142,7 @@ def voc_eval(detpath,
         lines = f.readlines()
 
     pdb.set_trace()
-    
+
     splitlines = [x.strip().split(' ') for x in lines]
     image_ids = [x[0] for x in splitlines]
     confidence = np.array([float(x[1]) for x in splitlines])
