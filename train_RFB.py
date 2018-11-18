@@ -173,7 +173,7 @@ optimizer = optim.SGD(net.parameters(), lr=args.lr,
 #optimizer = optim.RMSprop(net.parameters(), lr=args.lr,alpha = 0.9, eps=1e-08,
 #                      momentum=args.momentum, weight_decay=args.weight_decay)
 
-pdb.set_trace()
+# pdb.set_trace()
 criterion = MultiBoxLoss(num_classes, iou_thres_list, True, 0, True, 3, 0.5, \
     False, size_range, iou_param)
 priorbox = PriorBox(cfg)

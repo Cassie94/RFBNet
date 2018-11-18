@@ -77,10 +77,28 @@ for i in range(1,10):
 plt.show()
 
 iou_des_dict = {}
-sudo add-apt-repository \
-   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-   $(lsb_release -cs) \
-   stable"
+
+for ii in iou_df.columns[1:10]:
+    iou_des_dict[ii] = iou_df.groupby('size_range')[ii].describe()
+    iou_des_dict[ii].insert(loc=0, column='ratio',
+        value=iou_des_dict[ii]['count'].div(iou_des_dict[ii]['count'].sum()))
+    iou_des_dict[ii].insert(loc=0, column='cumsum',
+        value=iou_des_dict[ii]['ratio'].cumsum())
+
+df_50 = pd.DataFrame()
+df_50['ratio']=iou_des_dict['1_1']['ratio']
+df_50['cumsum']=iou_des_dict['1_1']['cumsum']
+# key_list = ['1_0.5', '1_1', '2_0.5', '5_0.5']
+key_list = [ '1_1', '2_0.5']
+ratio_list = ['25%','50%','75%']
+for kk in ratio_list:
+    for k in key_list:
+        df_50[k+'_'+kk] = iou_des_dict[k][kk]
+df_50.round(3)
+
+
+gt_dist.insert(loc=1,column='ratio',value=gt_dist['count'].div(gt_dist['count'].sum()))
+gt_dist.insert(loc=2,column='cumsum',value=gt_dist['proportion'].cumsum())
 
 CUDA_VISIBLE_DIVICES=2 python test_RFB.py -m /home/chenhao/hao-rfb/weights/weighted-2-0.5-60b/RFB_vgg_VOC_epoches_220.pth
 --save_folder eval/weighted_2_0.5_220epo/  >> weighted_2_0.5_250epo.txt &
@@ -90,25 +108,6 @@ CUDA_VISIBLE_DIVICES=3 python test_RFB.py -m /home/chenhao/hao-rfb/weights/weigh
 --save_folder eval/weighted_5_0.5/ >> weighted_5_0.5_250epo.txt &
 CUDA_VISIBLE_DIVICES=3 python test_RFB.py -m /home/chenhao/hao-rfb/weights/64b/RFB_vgg_VOC_epoches_250.pth \
 --save_folder eval/64b/ --retest True
-
-df_50 = pd.DataFrame()
-df_50['ratio']=iou_des_dict['1_1']['ratio']
-df_50['cumsum']=iou_des_dict['1_1']['cumsum']
-key_list = ['1_0.5', '1_1', '2_0.5', '5_0.5']
-for k in key_list:
-    df_50[k] = iou_des_dict[k]['50%']
-df_50.round(3)
-
-for ii in iou_df.columns[1:10]:
-    iou_des_dict[ii] = iou_df.groupby('size_range')[ii].describe()
-    iou_des_dict[ii].insert(loc=0, column='ratio',
-        value=iou_des_dict[ii]['count'].div(iou_des_dict[ii]['count'].sum()))
-    iou_des_dict[ii].insert(loc=0, column='cumsum',
-        value=iou_des_dict[ii]['ratio'].cumsum())
-
-gt_dist.insert(loc=1,column='ratio',value=gt_dist['count'].div(gt_dist['count'].sum()))
-gt_dist.insert(loc=2,column='cumsum',value=gt_dist['proportion'].cumsum())
-
 
 def my_jaccard(box_a, box_b, alpha=1, beta=1):
     """Compute the jaccard overlap of two sets of boxes.  The jaccard overlap
