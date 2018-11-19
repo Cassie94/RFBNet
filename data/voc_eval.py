@@ -233,5 +233,5 @@ def voc_eval(detpath,
     prec = tp / np.maximum(tp + fp, np.finfo(np.float64).eps)
     ap = voc_ap(rec, prec, use_07_metric)
 
-    pdb.set_trace()
+    # pdb.set_trace()
     return rec, prec, ap, rec_size, prec_size, ap_size

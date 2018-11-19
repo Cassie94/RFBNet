@@ -8,7 +8,6 @@ Updated by: Ellis Brown, Max deGroot
 
 import os
 import pickle
-import json
 import pdb
 import os.path
 import sys
@@ -331,9 +330,9 @@ class VOCDetection(data.Dataset):
         print('Mean AP = {:.4f}'.format(np.mean(aps)))
         for k in size_list:
             print('Mean AP for {} objects: {:.4f}'.format(k, np.mean(aps_size[k])))
-        pdb.set_trace()
-        with open(os.path.join(output_dir, 'detect_ap.json'), 'w') as fp:
-            json.dump(eval_res, fp)
+        # pdb.set_trace()
+        with open(os.path.join(output_dir, 'detect_ap.pkl'), 'wb') as fp:
+            pickle.dump(eval_res, fp)
         # print('~~~~~~~~')
         # print('Results:')
         # for ap in aps:
