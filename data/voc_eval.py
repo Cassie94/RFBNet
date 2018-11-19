@@ -109,6 +109,7 @@ def voc_eval(detpath,
     with open(imagesetfile, 'r') as f:
         lines = f.readlines()
     imagenames = [x.strip() for x in lines]
+    size_range = [.02, .4]
 
     if not os.path.isfile(cachefile):
         # load annots
@@ -130,6 +131,9 @@ def voc_eval(detpath,
     # extract gt objects for this class
     class_recs = {}
     npos = 0
+    npos_size = {}
+    for x in ['small', 'medidum', 'large']:
+        npos_size[x] = 0
     for imagename in imagenames:
         R = [obj for obj in recs[imagename] if obj['name'] == classname]
         bbox = np.array([x['bbox'] for x in R])
@@ -138,6 +142,9 @@ def voc_eval(detpath,
         img_size = recs[imagename][0]['img_size']
         det = [False] * len(R)
         npos = npos + sum(~difficult)
+        npos_size['small'] += sum((size <= size_range[0]) & (~difficult))
+        npos_size['medium'] += sum((size > size_range[0]) & (size < size_range[1]) & (~difficult))
+        npos_size['large'] += sum((size > size_range[1]) & (~difficult))
         class_recs[imagename] = {'bbox': bbox,
                                  'difficult': difficult,
                                  'det': det,
@@ -207,6 +214,8 @@ def voc_eval(detpath,
         else:
             fp[d] = 1.
 
+    size_index = np.piecewise(obj_size, [obj_size<=size_range[0], \
+        (obj_size>size_range[0])*(obj_size<=size_range[1]), obj_size>size_range[1]], [1,2,3])
         # compute precision recall
     fp = np.cumsum(fp)
     tp = np.cumsum(tp)
@@ -215,5 +224,13 @@ def voc_eval(detpath,
         # ground truth
     prec = tp / np.maximum(tp + fp, np.finfo(np.float64).eps)
     ap = voc_ap(rec, prec, use_07_metric)
+    # calculate rec,prec,ap for small/medium/large objects
+    fp_size, tp_size, rec_size, prec_size, ap_size = ({} for i in range(5))
+    for x,xx in zip(['small', 'medium', 'large'], [1,2,3]):
+        fp_size[x] = fp[size_index==xx]
+        tp_size[x] = tp[size_index==xx]
+        rec_size[x] = tp_size[x] / float(npos_size[x])
+        prec_size[x] = tp_size[x] / np.maximum(tp_size[x] + fp_size[x], np.finfo(np.float64).eps)
+        ap_size[x] = voc_ap(rec_size[x], prec_size[x], use_07_metric)
 
     return rec, prec, ap

@@ -8,6 +8,7 @@ Updated by: Ellis Brown, Max deGroot
 
 import os
 import pickle
+import json
 import os.path
 import sys
 import torch
@@ -116,7 +117,7 @@ class AnnotationTransform(object):
         Returns:
             a list containing lists of bounding boxes  [bbox coords, class name]
         """
-        res = np.empty((0,5)) 
+        res = np.empty((0,5))
         for obj in target.iter('object'):
             difficult = int(obj.find('difficult').text) == 1
             if not self.keep_difficult and difficult:
@@ -263,7 +264,7 @@ class VOCDetection(data.Dataset):
 
     def _write_voc_results_file(self, all_boxes):
         for cls_ind, cls in enumerate(VOC_CLASSES):
-            cls_ind = cls_ind 
+            cls_ind = cls_ind
             if cls == '__background__':
                 continue
             print('Writing {} VOC results file'.format(cls))
@@ -294,6 +295,11 @@ class VOCDetection(data.Dataset):
                                 name+'.txt')
         cachedir = os.path.join(self.root, 'annotations_cache')
         aps = []
+        aps_size = {}
+        size_list = ['small', 'medium', 'large']
+        for x in size_list:
+            aps_size[x] = []
+        eval_res = {'whole':{}, 'size':{}}
         # The PASCAL VOC metric changed in 2010
         use_07_metric = True if int(self._year) < 2010 else False
         print('VOC07 metric? ' + ('Yes' if use_07_metric else 'No'))
@@ -305,23 +311,35 @@ class VOCDetection(data.Dataset):
                 continue
 
             filename = self._get_voc_results_file_template().format(cls)
-            rec, prec, ap = voc_eval(
+            rec, prec, ap, rec_size, prec_size, ap_size = voc_eval(
                                     filename, annopath, imagesetfile, cls, cachedir, ovthresh=0.5,
                                     use_07_metric=use_07_metric)
             aps += [ap]
+            for x,xx in zip(['rec', 'prec', 'ap'], [rec,prec, ap]):
+                eval_res['whole'][x] = xx
+            for x,xx in zip(['rec', 'prec', 'ap'], [rec_size,prec_size, ap_size]):
+                eval_res['size'][x] = xx
+
             print('AP for {} = {:.4f}'.format(cls, ap))
+            for k in size_list:
+                print('AP for {} object of {} = {:.4f}'.format(k, cls, ap_size[k]))
+                aps[k] += [ap_size[k]]
             if output_dir is not None:
                 with open(os.path.join(output_dir, cls + '_pr.pkl'), 'wb') as f:
                     pickle.dump({'rec': rec, 'prec': prec, 'ap': ap}, f)
         print('Mean AP = {:.4f}'.format(np.mean(aps)))
-        print('~~~~~~~~')
-        print('Results:')
-        for ap in aps:
-            print('{:.3f}'.format(ap))
-        print('{:.3f}'.format(np.mean(aps)))
-        print('~~~~~~~~')
-        print('')
-        print('--------------------------------------------------------------')
+        for k in size_list:
+            print('Mean AP for {} objects: {:.4f}'.format(k, np.mean(aps_size[k])))
+        with open(os.path.join(output_dir, 'detect_ap.json'), 'w') as fp:
+            json.dump(eval_res, fp)
+        # print('~~~~~~~~')
+        # print('Results:')
+        # for ap in aps:
+        #     print('{:.3f}'.format(ap))
+        # print('{:.3f}'.format(np.mean(aps)))
+        # print('~~~~~~~~')
+        # print('')
+        # print('--------------------------------------------------------------')
         print('Results computed with the **unofficial** Python eval code.')
         print('Results should be very close to the official MATLAB eval code.')
         print('Recompute with `./tools/reval.py --matlab ...` for your paper.')
