@@ -79,7 +79,7 @@ assert len(size_range) == 2
 
 save_folder = os.path.join('weights', time.strftime("%Y%m%d-%H%M%S")+'-'+
     '-'.join([str(args.batch_size), str(args.lr),args.iou_threshold,
-    args.iou_param,args.size_range, '/']))
+    args.iou_param,args.size_range, args.soft_label '/']))
 # if not os.path.exists(args.save_folder):
 #     os.mkdir(args.save_folder)
 if not os.path.exists(save_folder):
