@@ -315,10 +315,12 @@ class VOCDetection(data.Dataset):
                                     filename, annopath, imagesetfile, cls, cachedir, ovthresh=0.5,
                                     use_07_metric=use_07_metric)
             aps += [ap]
+            for x in ['whole', 'size']:
+                eval_res[x][cls] = {}
             for x,xx in zip(['rec', 'prec', 'ap'], [rec,prec, ap]):
-                eval_res['whole'][x] = xx
+                eval_res['whole'][cls][x] = xx
             for x,xx in zip(['rec', 'prec', 'ap'], [rec_size,prec_size, ap_size]):
-                eval_res['size'][x] = xx
+                eval_res['size'][cls][x] = xx
 
             print('AP for {} = {:.4f}'.format(cls, ap))
             for k in size_list:
@@ -329,8 +331,9 @@ class VOCDetection(data.Dataset):
                     pickle.dump({'rec': rec, 'prec': prec, 'ap': ap}, f)
         print('Mean AP = {:.4f}'.format(np.mean(aps)))
         for k in size_list:
+            eval_res['size'][k]['mean-AP'] = np.mean(aps_size[k])
             print('Mean AP for {} objects: {:.4f}'.format(k, np.mean(aps_size[k])))
-        # pdb.set_trace()
+        pdb.set_trace()
         with open(os.path.join(output_dir, 'detect_ap.pkl'), 'wb') as fp:
             pickle.dump(eval_res, fp)
         # print('~~~~~~~~')
