@@ -234,4 +234,4 @@ def voc_eval(detpath,
         prec_size[x] = tp_size[x] / np.maximum(tp_size[x] + fp_size[x], np.finfo(np.float64).eps)
         ap_size[x] = voc_ap(rec_size[x], prec_size[x], use_07_metric)
 
-    return rec, prec, ap
+    return rec, prec, ap, rec_size, prec_size, ap_size
