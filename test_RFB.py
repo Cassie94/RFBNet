@@ -33,9 +33,9 @@ parser.add_argument('--cuda', default=True, type=bool,
                     help='Use cuda to train model')
 parser.add_argument('--gpu', default=0, type=int,
                     help='GPU id to use')
-parser.add_argument('--cpu', default=False, type=bool,
+parser.add_argument('--cpu', default=False, action='store_true',
                     help='Use cpu nms')
-parser.add_argument('--retest', default=False, type=bool,
+parser.add_argument('--retest', default=False, action='store_true',
                     help='test cache results')
 
 args = parser.parse_args()
