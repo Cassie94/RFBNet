@@ -111,6 +111,9 @@ momentum = 0.9
 
 net = build_net('train', img_dim, num_classes)
 print(net)
+if args.gpu_ids != '0':
+    gpu_list = [int(x) for x in args.gpu_ids.split(',')]
+    torch.cuda.set_device(gpu_list[0])
 if args.resume_net == None:
     base_weights = torch.load(args.basenet)
     print('Loading base network...')
@@ -159,8 +162,6 @@ if args.ngpu > 1:
     net = torch.nn.DataParallel(net, device_ids=list(range(args.ngpu)))
 
 if args.gpu_ids != '0':
-    gpu_list = [int(x) for x in args.gpu_ids.split(',')]
-    torch.cuda.set_device(gpu_list[0])
     net = torch.nn.DataParallel(net, device_ids=gpu_list)
 
 if args.cuda:
