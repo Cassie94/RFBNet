@@ -75,7 +75,7 @@ assert len(iou_param) == 2
 size_range = [float(x) for x in args.size_range.split(',')]
 assert len(size_range) == 2
 
-save_folder = os.path.join('weights', time.strftime("%Y%m%d-%H%M%S")+
+save_folder = os.path.join('weights', time.strftime("%Y%m%d-%H%M%S")+'-'+
     '-'.join([str(args.batch_size), str(args.lr),args.iou_threshold,
     args.iou_param,args.size_range, '/']))
 # if not os.path.exists(args.save_folder):
@@ -140,9 +140,9 @@ if args.resume_net == None:
         net.up_reduce.apply(weights_init)
 
 else:
-# load resume network
+# load resume networkg
     print('Loading resume network...')
-    state_dict = torch.load(args.resume_net)
+    state_dict = torch.load(args.resume_net, map_location='cuda:{}'.format(gpu_list[0]))
     # create new OrderedDict that does not contain `module.`
     from collections import OrderedDict
     new_state_dict = OrderedDict()
