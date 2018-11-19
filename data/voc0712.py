@@ -324,7 +324,6 @@ class VOCDetection(data.Dataset):
             print('AP for {} = {:.4f}'.format(cls, ap))
             for k in size_list:
                 print('AP for {} object of {} = {:.4f}'.format(k, cls, ap_size[k]))
-                # pdb.set_trace()
                 aps_size[k] += [ap_size[k]]
             if output_dir is not None:
                 with open(os.path.join(output_dir, cls + '_pr.pkl'), 'wb') as f:
@@ -332,6 +331,7 @@ class VOCDetection(data.Dataset):
         print('Mean AP = {:.4f}'.format(np.mean(aps)))
         for k in size_list:
             print('Mean AP for {} objects: {:.4f}'.format(k, np.mean(aps_size[k])))
+        pdb.set_trace()
         with open(os.path.join(output_dir, 'detect_ap.json'), 'w') as fp:
             json.dump(eval_res, fp)
         # print('~~~~~~~~')

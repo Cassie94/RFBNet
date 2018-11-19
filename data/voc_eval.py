@@ -157,7 +157,6 @@ def voc_eval(detpath,
     with open(detfile, 'r') as f:
         lines = f.readlines()
 
-    # pdb.set_trace()
     splitlines = [x.strip().split(' ') for x in lines]
     image_ids = [x[0] for x in splitlines]
     confidence = np.array([float(x[1]) for x in splitlines])
@@ -232,5 +231,5 @@ def voc_eval(detpath,
         rec_size[x] = tp_size[x] / float(npos_size[x])
         prec_size[x] = tp_size[x] / np.maximum(tp_size[x] + fp_size[x], np.finfo(np.float64).eps)
         ap_size[x] = voc_ap(rec_size[x], prec_size[x], use_07_metric)
-
+    pdb.set_trace()
     return rec, prec, ap, rec_size, prec_size, ap_size
