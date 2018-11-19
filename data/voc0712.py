@@ -9,6 +9,7 @@ Updated by: Ellis Brown, Max deGroot
 import os
 import pickle
 import json
+import pdb
 import os.path
 import sys
 import torch
@@ -323,6 +324,7 @@ class VOCDetection(data.Dataset):
             print('AP for {} = {:.4f}'.format(cls, ap))
             for k in size_list:
                 print('AP for {} object of {} = {:.4f}'.format(k, cls, ap_size[k]))
+                pdb.set_trace()
                 aps[k] += [ap_size[k]]
             if output_dir is not None:
                 with open(os.path.join(output_dir, cls + '_pr.pkl'), 'wb') as f:
