@@ -77,9 +77,9 @@ assert len(iou_param) == 2
 size_range = [float(x) for x in args.size_range.split(',')]
 assert len(size_range) == 2
 
-save_folder = os.path.join('weights', time.strftime("%Y%m%d-%H%M%S")+'-'+
-    '-'.join([str(args.batch_size), str(args.lr),args.iou_threshold,
-    args.iou_param,args.size_range, args.soft_label '/']))
+save_folder = os.path.join('weights', '-'.join([str(args.lr),
+    args.iou_threshold, args.soft_label, str(args.batch_size),
+    args.iou_param,args.size_range, time.strftime("%Y%m%d-%H%M%S"), '/']))
 # if not os.path.exists(args.save_folder):
 #     os.mkdir(args.save_folder)
 if not os.path.exists(save_folder):
