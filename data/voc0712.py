@@ -331,6 +331,7 @@ class VOCDetection(data.Dataset):
                     pickle.dump({'rec': rec, 'prec': prec, 'ap': ap}, f)
         print('Mean AP = {:.4f}'.format(np.mean(aps)))
         for k in size_list:
+            eval_res['size'][k] = {}
             eval_res['size'][k]['mean-AP'] = np.mean(aps_size[k])
             print('Mean AP for {} objects: {:.4f}'.format(k, np.mean(aps_size[k])))
         pdb.set_trace()
