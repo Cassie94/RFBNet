@@ -215,6 +215,15 @@ def voc_eval(detpath,
 
     size_index = np.piecewise(obj_size, [obj_size<=size_range[0], \
         (obj_size>size_range[0])*(obj_size<=size_range[1]), obj_size>size_range[1]], [1,2,3])
+    # calculate rec,prec,ap for small/medium/large objects
+    fp_size, tp_size, rec_size, prec_size, ap_size = ({} for i in range(5))
+    for x,xx in zip(size_list, [1,2,3]):
+        fp_size[x] = np.cumsum(fp[size_index==xx])
+        tp_size[x] = np.cumsum(tp[size_index==xx])
+        rec_size[x] = tp_size[x] / float(npos_size[x])
+        prec_size[x] = tp_size[x] / np.maximum(tp_size[x] + fp_size[x], np.finfo(np.float64).eps)
+        ap_size[x] = voc_ap(rec_size[x], prec_size[x], use_07_metric)
+
         # compute precision recall
     fp = np.cumsum(fp)
     tp = np.cumsum(tp)
@@ -223,13 +232,6 @@ def voc_eval(detpath,
         # ground truth
     prec = tp / np.maximum(tp + fp, np.finfo(np.float64).eps)
     ap = voc_ap(rec, prec, use_07_metric)
-    # calculate rec,prec,ap for small/medium/large objects
-    fp_size, tp_size, rec_size, prec_size, ap_size = ({} for i in range(5))
-    for x,xx in zip(size_list, [1,2,3]):
-        fp_size[x] = fp[size_index==xx]
-        tp_size[x] = tp[size_index==xx]
-        rec_size[x] = tp_size[x] / float(npos_size[x])
-        prec_size[x] = tp_size[x] / np.maximum(tp_size[x] + fp_size[x], np.finfo(np.float64).eps)
-        ap_size[x] = voc_ap(rec_size[x], prec_size[x], use_07_metric)
+
     pdb.set_trace()
     return rec, prec, ap, rec_size, prec_size, ap_size
