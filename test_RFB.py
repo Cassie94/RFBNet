@@ -42,7 +42,7 @@ args = parser.parse_args()
 gpu_id = args.gpu
 torch.cuda.set_device(gpu_id)
 
-args.save_folder = os.path.join('eval', args.trained_model.replace('/','-'))
+args.save_folder = os.path.join('eval', '-'.join(args.trained_model.split('/')[-2:]))
 if not os.path.exists(args.save_folder):
     os.mkdir(args.save_folder)
 
