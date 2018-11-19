@@ -132,7 +132,8 @@ def voc_eval(detpath,
     class_recs = {}
     npos = 0
     npos_size = {}
-    for x in ['small', 'medidum', 'large']:
+    size_list = ['small', 'medium', 'large']
+    for x in size_list:
         npos_size[x] = 0
     for imagename in imagenames:
         R = [obj for obj in recs[imagename] if obj['name'] == classname]
@@ -142,9 +143,9 @@ def voc_eval(detpath,
         img_size = recs[imagename][0]['img_size']
         det = [False] * len(R)
         npos = npos + sum(~difficult)
-        npos_size['small'] += sum((size <= size_range[0]) & (~difficult))
-        npos_size['medium'] += sum((size > size_range[0]) & (size < size_range[1]) & (~difficult))
-        npos_size['large'] += sum((size > size_range[1]) & (~difficult))
+        npos_size[size_list[0]] += sum((size <= size_range[0]) & (~difficult))
+        npos_size[size_list[1]] += sum((size > size_range[0]) & (size < size_range[1]) & (~difficult))
+        npos_size[size_list[2]] += sum((size > size_range[1]) & (~difficult))
         class_recs[imagename] = {'bbox': bbox,
                                  'difficult': difficult,
                                  'det': det,
@@ -226,7 +227,7 @@ def voc_eval(detpath,
     ap = voc_ap(rec, prec, use_07_metric)
     # calculate rec,prec,ap for small/medium/large objects
     fp_size, tp_size, rec_size, prec_size, ap_size = ({} for i in range(5))
-    for x,xx in zip(['small', 'medium', 'large'], [1,2,3]):
+    for x,xx in zip(size_list, [1,2,3]):
         fp_size[x] = fp[size_index==xx]
         tp_size[x] = tp[size_index==xx]
         rec_size[x] = tp_size[x] / float(npos_size[x])
