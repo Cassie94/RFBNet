@@ -320,7 +320,9 @@ class VOCDetection(data.Dataset):
             for x,xx in zip(['rec', 'prec', 'ap'], [rec,prec, ap]):
                 eval_res['whole'][cls][x] = xx
             for x,xx in zip(['rec', 'prec', 'ap'], [rec_size,prec_size, ap_size]):
-                eval_res['size'][cls][x] = xx.round(4)
+                for kk in size_list:
+                    eval_res['size'][cls][kk] = {}
+                    eval_res['size'][cls][kk][x] = xx[kk].round(4)
 
             print('AP for {} = {:.4f}'.format(cls, ap))
             for k in size_list:
