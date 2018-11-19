@@ -36,6 +36,8 @@ parser.add_argument('--iou_threshold', default='0.5,0.5,0.5',
                     type=str, help='Min Jaccard index for matching')
 parser.add_argument('--iou_param', default='1,1',
                     type=str, help='iou parameters (alpha, beta)')
+parser.add_argument('--soft_label', default=True,
+                    type=bool, help='Use soft-label for classification')
 parser.add_argument('-b', '--batch_size', default=32,
                     type=int, help='Batch size for training')
 parser.add_argument('--num_workers', default=8,
@@ -176,7 +178,7 @@ optimizer = optim.SGD(net.parameters(), lr=args.lr,
 
 # pdb.set_trace()
 criterion = MultiBoxLoss(num_classes, iou_thres_list, True, 0, True, 3, 0.5, \
-    False, size_range, iou_param)
+    False, size_range, iou_param, args.soft_label)
 priorbox = PriorBox(cfg)
 with torch.no_grad():
     priors = priorbox.forward()
