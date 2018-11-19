@@ -154,7 +154,7 @@ if __name__ == '__main__':
     img_dim = (300,512)[args.size=='512']
     num_classes = (21, 81)[args.dataset == 'COCO']
     net = build_net('test', img_dim, num_classes)    # initialize detector
-    state_dict = torch.load(args.trained_model)
+    state_dict = torch.load(args.trained_model, map_location='cuda:{}'.format(gpu_id))
     # create new OrderedDict that does not contain `module.`
 
     from collections import OrderedDict
