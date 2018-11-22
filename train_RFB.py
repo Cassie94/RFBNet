@@ -36,6 +36,8 @@ parser.add_argument('--iou_threshold', default='0.5,0.5,0.5',
                     type=str, help='Min Jaccard index for matching')
 parser.add_argument('--iou_param', default='1,1',
                     type=str, help='iou parameters (alpha, beta)')
+parser.add_argument('--adapt_param', default='.5',
+                    type=float, help='weight parameters for weight_iou threshold')                    
 parser.add_argument('--soft_label', default=False,
                     action='store_true', help='Use soft-label for classification')
 parser.add_argument('-b', '--batch_size', default=32,

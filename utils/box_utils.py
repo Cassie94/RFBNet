@@ -87,7 +87,7 @@ def matrix_iou(a,b):
     area_b = np.prod(b[:, 2:] - b[:, :2], axis=1)
     return area_i / (area_a[:, np.newaxis] + area_b - area_i)
 
-def match(threshold, size_range, iou_param, truths, priors, variances, labels, \
+def match(threshold, size_range, iou_param, adapt_param, truths, priors, variances, labels, \
     loc_t, conf_t, idx, ious=None):
     """Match each prior box with the ground truth box of the highest jaccard
     overlap, encode the bounding boxes, then return the matched indices
@@ -97,6 +97,8 @@ def match(threshold, size_range, iou_param, truths, priors, variances, labels, \
             different iou for small/medium/large objects.
         size_range: (list(float)) The size range for small/medium/large objects.
         iou_param: (list(tensor)) Alpha,Beta for weighted iou.
+        adapt_param: (scalar) weight to change the iou_threshold to balance the weight iou,
+            new_thes = old_thres + adapt_param * min((max_new_iou - max_old_iou), 0)
         truths: (tensor) Ground truth boxes, Shape: [num_obj, num_priors].
         priors: (tensor) Prior boxes from priorbox layers, Shape: [n_priors,4].
         variances: (tensor) Variances corresponding to each prior coord,
@@ -116,14 +118,15 @@ def match(threshold, size_range, iou_param, truths, priors, variances, labels, \
     # (Bipartite Matching)
     # [1,num_objects] best prior for each ground truth
     best_prior_overlap, best_prior_idx = overlaps.max(1, keepdim=True)
-    best_orig_prior_overlap, best_orig_prior_idx = orig_overlaps.max(1, keepdim=True)
+    best_prior_overlap.squeeze_(1)
     # [1,num_priors] best ground truth for each prior
     best_truth_overlap, best_truth_idx = overlaps.max(0, keepdim=True)
-    best_orig_truth_overlap, best_orig_truth_idx = overlaps.max(0, keepdim=True)
     best_truth_idx.squeeze_(0)
-    best_orig_truth_idx.squeeze_(0)
     best_truth_overlap.squeeze_(0)
-    best_orig_truth_overlap.squeeze_(0)
+    # compute the orig_iou
+    best_prior_overlap, best_prior_idx = overlaps.max(1, keepdim=True)
+    best_orig_prior_overlap, best_orig_prior_idx = orig_overlaps.max(1, keepdim=True)
+    iou_diff = torch.clamp(best_prior_overlap - best_orig_prior_overlap, max=0).squeeze_(1)
     if ious is not None:
         ious[idx] = best_truth_overlap
     best_prior_idx.squeeze_(1)
@@ -141,10 +144,16 @@ def match(threshold, size_range, iou_param, truths, priors, variances, labels, \
     assert size_range[0] < size_range[1]
     assert len(threshold) == 3
     gt_area = (truths[:,3]-truths[:,1])*(truths[:,2]-truths[:,0])
-    x = gt_area.cpu().numpy()
-    thres = torch.from_numpy(np.piecewise(x, [x <= size_range[0],
-        (x > size_range[0]) * (x <= size_range[1]), x > size_range[1]], threshold))
-    thres_list = thres[best_truth_idx]
+    gt_thres = torch.zeros_like(labels)
+    gt_thres[gt_area<=size_range[0]] = threshold[0]
+    gt_thres[(gt_area > size_range[0]) * (gt_area <= size_range[1])] = threshold[1]
+    gt_thres[gt_area > size_range[1]] = threshold[2]
+    gt_thres += adapt_param * iou_diff
+    thres_list = gt_thres[best_truth_idx]
+    # x = gt_area.cpu().numpy()
+    # thres = torch.from_numpy(np.piecewise(x, [x <= size_range[0],
+    #     (x > size_range[0]) * (x <= size_range[1]), x > size_range[1]], threshold))
+    # thres_list = thres[best_truth_idx]
     pdb.set_trace()
     # for i in range(len(labels)):
     #     thres_list[thres_list==i] = thres[i]

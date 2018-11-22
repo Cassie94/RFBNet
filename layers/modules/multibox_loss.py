@@ -34,7 +34,8 @@ class MultiBoxLoss(nn.Module):
 
 
     def __init__(self, num_classes,overlap_thresh,prior_for_matching,bkg_label,\
-        neg_mining,neg_pos,neg_overlap,encode_target, size_range, iou_param, soft_label):
+        neg_mining,neg_pos,neg_overlap,encode_target, size_range, iou_param, adapt_param, \
+        soft_label):
         super(MultiBoxLoss, self).__init__()
         self.num_classes = num_classes
         self.threshold = overlap_thresh
@@ -47,6 +48,7 @@ class MultiBoxLoss(nn.Module):
         self.variance = [0.1,0.2]
         self.size_range = size_range
         self.iou_param = iou_param
+        self.adapt_param = adapt_param
         self.soft_label = soft_label
 
     def forward(self, predictions, priors, targets):
@@ -76,8 +78,8 @@ class MultiBoxLoss(nn.Module):
             truths = targets[idx][:,:-1].data
             labels = targets[idx][:,-1].data
             defaults = priors.data
-            match(self.threshold,self.size_range,self.iou_param,truths,defaults,\
-                self.variance,labels,loc_t,conf_t,idx,ious)
+            match(self.threshold,self.size_range,self.iou_param, adapt_param, \
+                truths,defaults, self.variance,labels,loc_t,conf_t,idx,ious)
         if GPU:
             loc_t = loc_t.cuda()
             conf_t = conf_t.cuda()
