@@ -154,7 +154,7 @@ def match(threshold, size_range, iou_param, adapt_param, truths, priors, varianc
     # thres = torch.from_numpy(np.piecewise(x, [x <= size_range[0],
     #     (x > size_range[0]) * (x <= size_range[1]), x > size_range[1]], threshold))
     # thres_list = thres[best_truth_idx]
-    pdb.set_trace()
+    # pdb.set_trace()
     # for i in range(len(labels)):
     #     thres_list[thres_list==i] = thres[i]
 
