@@ -127,7 +127,7 @@ def match(threshold, size_range, iou_param, adapt_param, truths, priors, varianc
     best_truth_idx.squeeze_(0)
     best_truth_overlap.squeeze_(0)
     best_orig_truth_idx.squeeze_(0)
-    best_orig_prior_overlap.squeeze_(0)
+    best_orig_truth_overlap.squeeze_(0)
     # compute the orig_iou
     iou_diff = torch.clamp(best_prior_overlap - best_orig_prior_overlap, max=0).squeeze_(1)
     if ious is not None:
