@@ -72,7 +72,8 @@ def jaccard(box_a, box_b, alpha=1, beta=1):
     area_b = ((box_b[:, 2]-box_b[:, 0]) *
               (box_b[:, 3]-box_b[:, 1])).unsqueeze(0).expand_as(inter)  # [A,B]
     union = alpha*area_a + beta*area_b + (1-alpha-beta)*inter
-    return inter / union  # [A,B]
+    orig_union = area_a + area_b - inter
+    return inter / union, inter / orig_union  # [A,B]
 
 def matrix_iou(a,b):
     """
@@ -111,14 +112,18 @@ def match(threshold, size_range, iou_param, truths, priors, variances, labels, \
     """
     # jaccard index
     assert len(iou_param) == 2
-    overlaps = jaccard(truths, point_form(priors), iou_param[0], iou_param[1])
+    overlaps, orig_overlaps = jaccard(truths, point_form(priors), iou_param[0], iou_param[1])
     # (Bipartite Matching)
     # [1,num_objects] best prior for each ground truth
     best_prior_overlap, best_prior_idx = overlaps.max(1, keepdim=True)
+    best_orig_prior_overlap, best_orig_prior_idx = orig_overlaps.max(1, keepdim=True)
     # [1,num_priors] best ground truth for each prior
     best_truth_overlap, best_truth_idx = overlaps.max(0, keepdim=True)
+    best_orig_truth_overlap, best_orig_truth_idx = orig_overlaps.max(0, keepdim=True)
     best_truth_idx.squeeze_(0)
+    best_orig_truch_idx.squeeze_(0)
     best_truth_overlap.squeeze_(0)
+    best_orig_truth_overlap.squeeze_(0)
     if ious is not None:
         ious[idx] = best_truth_overlap
     best_prior_idx.squeeze_(1)
@@ -140,6 +145,7 @@ def match(threshold, size_range, iou_param, truths, priors, variances, labels, \
     thres = torch.from_numpy(np.piecewise(x, [x <= size_range[0],
         (x > size_range[0]) * (x <= size_range[1]), x > size_range[1]], threshold))
     thres_list = thres[best_truth_idx]
+    pdb.set_trace()
     # for i in range(len(labels)):
     #     thres_list[thres_list==i] = thres[i]
 

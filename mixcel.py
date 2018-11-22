@@ -89,7 +89,7 @@ df_50 = pd.DataFrame()
 df_50['ratio']=iou_des_dict['1_1']['ratio']
 df_50['cumsum']=iou_des_dict['1_1']['cumsum']
 # key_list = ['1_0.5', '1_1', '2_0.5', '5_0.5']
-key_list = [ '1_1', '2_0.5']
+key_list = [ '1_1', '2_0.5', '2_1']
 ratio_list = ['25%','50%','75%']
 for kk in ratio_list:
     for k in key_list:
@@ -108,6 +108,8 @@ CUDA_VISIBLE_DIVICES=3 python test_RFB.py -m /home/chenhao/hao-rfb/weights/weigh
 --save_folder eval/weighted_5_0.5/ >> weighted_5_0.5_250epo.txt &
 CUDA_VISIBLE_DIVICES=3 python test_RFB.py -m /home/chenhao/hao-rfb/weights/64b/RFB_vgg_VOC_epoches_250.pth \
 --save_folder eval/64b/ --retest True
+
+
 
 def my_jaccard(box_a, box_b, alpha=1, beta=1):
     """Compute the jaccard overlap of two sets of boxes.  The jaccard overlap
