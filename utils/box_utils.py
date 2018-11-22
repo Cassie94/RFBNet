@@ -155,8 +155,6 @@ def match(threshold, size_range, iou_param, adapt_param, truths, priors, varianc
     #     (x > size_range[0]) * (x <= size_range[1]), x > size_range[1]], threshold))
     # thres_list = thres[best_truth_idx]
     # pdb.set_trace()
-    # for i in range(len(labels)):
-    #     thres_list[thres_list==i] = thres[i]
 
     conf[best_truth_overlap < thres_list.type_as(best_truth_overlap)] = 0
     loc = encode(matches, priors, variances)
