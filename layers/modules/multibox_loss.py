@@ -78,7 +78,7 @@ class MultiBoxLoss(nn.Module):
             truths = targets[idx][:,:-1].data
             labels = targets[idx][:,-1].data
             defaults = priors.data
-            match(self.threshold,self.size_range,self.iou_param, adapt_param, \
+            match(self.threshold,self.size_range,self.iou_param, self.adapt_param, \
                 truths,defaults, self.variance,labels,loc_t,conf_t,idx,ious)
         if GPU:
             loc_t = loc_t.cuda()
