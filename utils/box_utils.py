@@ -119,9 +119,9 @@ def match(threshold, size_range, iou_param, truths, priors, variances, labels, \
     best_orig_prior_overlap, best_orig_prior_idx = orig_overlaps.max(1, keepdim=True)
     # [1,num_priors] best ground truth for each prior
     best_truth_overlap, best_truth_idx = overlaps.max(0, keepdim=True)
-    best_orig_truth_overlap, best_orig_truth_idx = orig_overlaps.max(0, keepdim=True)
+    best_orig_truth_overlap, best_orig_truth_idx = overlaps.max(0, keepdim=True)
     best_truth_idx.squeeze_(0)
-    best_orig_truch_idx.squeeze_(0)
+    best_orig_truth_idx.squeeze_(0)
     best_truth_overlap.squeeze_(0)
     best_orig_truth_overlap.squeeze_(0)
     if ious is not None:
