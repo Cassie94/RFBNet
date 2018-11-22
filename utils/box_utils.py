@@ -118,17 +118,20 @@ def match(threshold, size_range, iou_param, adapt_param, truths, priors, varianc
     # (Bipartite Matching)
     # [1,num_objects] best prior for each ground truth
     best_prior_overlap, best_prior_idx = overlaps.max(1, keepdim=True)
+    best_orig_prior_overlap, best_orig_prior_idx = orig_overlaps.max(1, keepdim=True)
     best_prior_overlap.squeeze_(1)
+    best_orig_prior_overlap.squeeze_(1)
     # [1,num_priors] best ground truth for each prior
     best_truth_overlap, best_truth_idx = overlaps.max(0, keepdim=True)
+    best_orig_truth_overlap, best_orig_truth_idx = orig_overlaps.max(0, keepdim=True)
     best_truth_idx.squeeze_(0)
     best_truth_overlap.squeeze_(0)
+    best_orig_truth_idx.squeeze_(0)
+    best_orig_prior_overlap.squeeze_(0)
     # compute the orig_iou
-    best_prior_overlap, best_prior_idx = overlaps.max(1, keepdim=True)
-    best_orig_prior_overlap, best_orig_prior_idx = orig_overlaps.max(1, keepdim=True)
     iou_diff = torch.clamp(best_prior_overlap - best_orig_prior_overlap, max=0).squeeze_(1)
     if ious is not None:
-        ious[idx] = torch.max(best_truth_overlap,best_orig_truth_overlap)
+        ious[idx] = torch.max(best_truth_overlap, best_orig_truth_overlap)
     best_prior_idx.squeeze_(1)
     best_prior_overlap.squeeze_(1)
     best_truth_overlap.index_fill_(0, best_prior_idx, 2)  # ensure best prior
