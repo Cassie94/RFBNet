@@ -44,7 +44,7 @@ parser.add_argument('--soft_label', default=False,
                     action='store_true', help='Use soft-label for classification')
 parser.add_argument('-b', '--batch_size', default=32,
                     type=int, help='Batch size for training')
-parser.add_argument('--num_workers', default=8,
+parser.add_argument('--num_workers', default=0,
                     type=int, help='Number of workers used in dataloading')
 parser.add_argument('--cuda', default=True,
                     type=bool, help='Use cuda to train model')
@@ -272,7 +272,7 @@ def train():
         loc_loss += loss_l.item()
         conf_loss += loss_c.item()
         load_t1 = time.time()
-        if iteration % 100 == 0:
+        if iteration % 50 == 0:
             print('Epoch:' + repr(epoch) + ' || epochiter: ' + repr(iteration % epoch_size) + '/' + repr(epoch_size)
                   + '|| Totel iter ' +
                   repr(iteration) + ' || L: %.4f C: %.4f||' % (
