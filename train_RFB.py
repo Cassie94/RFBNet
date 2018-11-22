@@ -183,7 +183,7 @@ optimizer = optim.SGD(net.parameters(), lr=args.lr,
 
 # pdb.set_trace()
 criterion = MultiBoxLoss(num_classes, iou_thres_list, True, 0, True, 3, 0.5, \
-    False, size_range, iou_param, args.adapt_param, args.soft_label)
+    False, size_range, iou_param, args.adapt_param, args.iou_type, args.soft_label)
 priorbox = PriorBox(cfg)
 with torch.no_grad():
     priors = priorbox.forward()
