@@ -44,7 +44,7 @@ parser.add_argument('--soft_label', default=False,
                     action='store_true', help='Use soft-label for classification')
 parser.add_argument('-b', '--batch_size', default=32,
                     type=int, help='Batch size for training')
-parser.add_argument('--num_workers', default=0,
+parser.add_argument('--num_workers', default=8,
                     type=int, help='Number of workers used in dataloading')
 parser.add_argument('--cuda', default=True,
                     type=bool, help='Use cuda to train model')
