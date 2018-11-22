@@ -132,10 +132,10 @@ def match(threshold, size_range, iou_param, adapt_param, iou_type, truths, \
     best_orig_truth_overlap.squeeze_(0)
     # compute the orig_iou
     iou_diff = torch.clamp(best_prior_overlap - best_orig_prior_overlap, max=0)
-    if iou_type == "mean_iou":
+    if iou_type == "mean":
         best_truth_overlap = (best_truth_overlap, best_orig_truth_overlap) / 2
-    else if iou_type == "max_iou":
-        best_truth_overlap = torch.max(best_truth_overlap, best_orig_truth_overlap)    
+    else if iou_type == "max":
+        best_truth_overlap = torch.max(best_truth_overlap, best_orig_truth_overlap)
     if ious is not None:
         ious[idx] = best_truth_overlap
     best_truth_overlap.index_fill_(0, best_prior_idx, 2)  # ensure best prior

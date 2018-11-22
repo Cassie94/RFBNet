@@ -38,8 +38,8 @@ parser.add_argument('--iou_param', default='1,1',
                     type=str, help='iou parameters (alpha, beta)')
 parser.add_argument('--adapt_param', default='.5',
                     type=float, help='weight parameters for weight_iou threshold')
-parser.add_argument('--iou_type', default='orig_iou',
-                    type=str, help='iou value for each prior box')                    
+parser.add_argument('--iou_type', default='orig',
+                    type=str, help='iou value for each prior box')
 parser.add_argument('--soft_label', default=False,
                     action='store_true', help='Use soft-label for classification')
 parser.add_argument('-b', '--batch_size', default=32,
@@ -82,7 +82,8 @@ size_range = [float(x) for x in args.size_range.split(',')]
 assert len(size_range) == 2
 
 save_folder = os.path.join('weights', '-'.join([str(args.lr),
-    args.iou_threshold, str(args.adapt_param), str(args.soft_label), str(args.batch_size),
+    args.iou_threshold, str(args.adapt_param), args.iou_type, \
+    str(args.soft_label), str(args.batch_size), \
     args.iou_param,args.size_range, time.strftime("%Y%m%d-%H%M%S"), '/']))
 # if not os.path.exists(args.save_folder):
 #     os.mkdir(args.save_folder)
