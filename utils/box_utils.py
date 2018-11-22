@@ -134,7 +134,7 @@ def match(threshold, size_range, iou_param, adapt_param, iou_type, truths, \
     iou_diff = torch.clamp(best_prior_overlap - best_orig_prior_overlap, max=0)
     if iou_type == "mean":
         best_truth_overlap = (best_truth_overlap, best_orig_truth_overlap) / 2
-    else if iou_type == "max":
+    elif iou_type == "max":
         best_truth_overlap = torch.max(best_truth_overlap, best_orig_truth_overlap)
     if ious is not None:
         ious[idx] = best_truth_overlap
