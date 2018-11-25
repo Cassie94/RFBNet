@@ -171,6 +171,7 @@ def voc_eval(detpath,
         # go down dets and mark TPs and FPs
     nd = len(image_ids)
     tp = {}
+    fp = {}
     for thres in ovthresh:
         tp[thres] = np.zeros(nd)
         fp[thres] = np.zeros(nd)
