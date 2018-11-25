@@ -227,8 +227,8 @@ def voc_eval(detpath,
         rec_thres[thres], prec_thres[thres], ap_thres[thres] =({} for i in range(3))
         fp_size, tp_size, rec_size, prec_size, ap_size = ({} for i in range(5))
         for x,xx in zip(size_list, [1,2,3]):
-            fp_size[x] = np.cumsum(fp[size_index==xx])
-            tp_size[x] = np.cumsum(tp[size_index==xx])
+            fp_size[x] = np.cumsum(fp[thres][size_index==xx])
+            tp_size[x] = np.cumsum(tp[thres][size_index==xx])
             rec_size[x] = tp_size[x] / float(npos_size[x])
             prec_size[x] = tp_size[x] / np.maximum(tp_size[x] + fp_size[x], np.finfo(np.float64).eps)
             ap_size[x] = voc_ap(rec_size[x], prec_size[x], use_07_metric)
