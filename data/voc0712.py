@@ -316,7 +316,7 @@ class VOCDetection(data.Dataset):
             #                         filename, annopath, imagesetfile, cls, cachedir, ovthresh= 0.5,
             #                         use_07_metric=use_07_metric)
             rec_thres, prec_thres, ap_thres = voc_eval(
-                                    filename, annopath, imagesetfile, cls, cachedir, ovthresh=[0.5,0.7]
+                                    filename, annopath, imagesetfile, cls, cachedir, ovthresh=[0.5,0.7],
                                     use_07_metric=use_07_metric)
             # aps += [ap_thres['whole']]
 
