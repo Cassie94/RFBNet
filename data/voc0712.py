@@ -299,7 +299,8 @@ class VOCDetection(data.Dataset):
         size_list = ['small', 'medium', 'large']
         for x in size_list:
             aps_size[x] = []
-        eval_res = {'whole':{}, 'size':{}}
+        # eval_res = {'whole':{}, 'size':{}}
+        eval_res = {}
         # The PASCAL VOC metric changed in 2010
         use_07_metric = True if int(self._year) < 2010 else False
         print('VOC07 metric? ' + ('Yes' if use_07_metric else 'No'))
@@ -311,32 +312,45 @@ class VOCDetection(data.Dataset):
                 continue
 
             filename = self._get_voc_results_file_template().format(cls)
-            rec, prec, ap, rec_size, prec_size, ap_size = voc_eval(
-                                    filename, annopath, imagesetfile, cls, cachedir, ovthresh=0.5,
+            # rec, prec, ap, rec_size, prec_size, ap_size = voc_eval(
+            #                         filename, annopath, imagesetfile, cls, cachedir, ovthresh= 0.5,
+            #                         use_07_metric=use_07_metric)
+            rec_thres, prec_thres, ap_thres = voc_eval(
+                                    filename, annopath, imagesetfile, cls, cachedir, ovthresh=[0.5,0.7]
                                     use_07_metric=use_07_metric)
-            aps += [ap]
-            for x in ['whole', 'size']:
-                eval_res[x][cls] = {}
-            for x,xx in zip(['rec', 'prec', 'ap'], [rec,prec, ap]):
-                eval_res['whole'][cls][x] = xx
-            for x,xx in zip(['rec', 'prec', 'ap'], [rec_size,prec_size, ap_size]):
-                for kk in size_list:
-                    eval_res['size'][cls][kk] = {}
-                    eval_res['size'][cls][kk][x] = xx[kk].round(4)
+            # aps += [ap_thres['whole']]
 
-            print('AP for {} = {:.4f}'.format(cls, ap))
+            eval_res[cls] = {}
+            eval_res[]
+            # for x in ['whole', 'size']:
+            #     eval_res[x][cls] = {}
+            for x,xx in zip(['rec', 'prec', 'ap'], [rec_thres, prec_thres, ap_thres]):
+                eval_res[x] = xx
+                # eval_res['whole'][cls][x] = xx['whole']
+                # for kk in size_list:
+                #     eval_res['size'][cls][kk] = {}
+                #     eval_res['size'][cls][kk][x] = xx['size'][kk].round(4)
+
+            # for x,xx in zip(['rec', 'prec', 'ap'], [rec,prec, ap]):
+            #     eval_res['whole'][cls][x] = xx
+            # for x,xx in zip(['rec', 'prec', 'ap'], [rec_size,prec_size, ap_size]):
+            #     for kk in size_list:
+            #         eval_res['size'][cls][kk] = {}
+            #         eval_res['size'][cls][kk][x] = xx[kk].round(4)
+
+            print('AP for {} = {:.4f}'.format(cls, ap_thres['whole']))
             for k in size_list:
-                print('AP for {} object of {} = {:.4f}'.format(k, cls, ap_size[k]))
-                aps_size[k] += [ap_size[k]]
+                print('AP for {} object of {} = {:.4f}'.format(k, cls, ap_thres['size'][k]))
+                # aps_size[k] += [ap_thres['size'][k]]
             if output_dir is not None:
                 with open(os.path.join(output_dir, cls + '_pr.pkl'), 'wb') as f:
-                    pickle.dump({'rec': rec, 'prec': prec, 'ap': ap}, f)
-        print('Mean AP = {:.4f}'.format(np.mean(aps)))
-        for k in size_list:
-            eval_res['size'][k] = {}
-            eval_res['size'][k]['mean-AP'] = np.mean(aps_size[k]).round(4)
-            print('Mean AP for {} objects: {:.4f}'.format(k, np.mean(aps_size[k])))
-        # pdb.set_trace()
+                    pickle.dump({'rec': rec_thres, 'prec': prec_thres, 'ap': ap_thres}, f)
+        # print('Mean AP = {:.4f}'.format(np.mean(aps)))
+        pdb.set_trace()
+        # for k in size_list:
+        #     eval_res['size'][k] = {}
+        #     eval_res['size'][k]['mean-AP'] = np.mean(aps_size[k]).round(4)
+        #     print('Mean AP for {} objects: {:.4f}'.format(k, np.mean(aps_size[k])))
         with open(os.path.join(output_dir, 'detect_ap.pkl'), 'wb') as fp:
             pickle.dump(eval_res, fp)
         # print('~~~~~~~~')

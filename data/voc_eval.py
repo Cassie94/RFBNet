@@ -74,7 +74,7 @@ def voc_eval(detpath,
              imagesetfile,
              classname,
              cachedir,
-             ovthresh=0.5,
+             ovthresh=[0.5, 0.7],
              use_07_metric=False):
     """rec, prec, ap = voc_eval(detpath,
                                 annopath,
@@ -92,7 +92,7 @@ def voc_eval(detpath,
     imagesetfile: Text file containing the list of images, one image per line.
     classname: Category name (duh)
     cachedir: Directory for caching the annotations
-    [ovthresh]: Overlap threshold (default = 0.5)
+    [ovthresh]: Overlap threshold (default = 0.5, 0.7)
     [use_07_metric]: Whether to use VOC07's 11 point AP computation
         (default False)
     """
@@ -170,8 +170,12 @@ def voc_eval(detpath,
 
         # go down dets and mark TPs and FPs
     nd = len(image_ids)
-    tp = np.zeros(nd)
-    fp = np.zeros(nd)
+    tp = {}
+    for thres in ovthresh:
+        tp[thres] = np.zeros(nd)
+        fp[thres] = np.zeros(nd)
+    # tp = np.zeros(nd)
+    # fp = np.zeros(nd)
     obj_size = np.zeros(nd)
     for d in range(nd):
         R = class_recs[image_ids[d]]
@@ -203,35 +207,44 @@ def voc_eval(detpath,
         else:
             obj_size[d] = (bb[2] - bb[0]) * (bb[3] - bb[1]) / (img_size[0] * img_size[1])
 
-        if ovmax > ovthresh:
-            if not R['difficult'][jmax]:
-                if not R['det'][jmax]:
-                    tp[d] = 1.
-                    R['det'][jmax] = 1
-                else:
-                    fp[d] = 1.
-        else:
-            fp[d] = 1.
+        for thres in ovthresh:
+            if ovmax > thres:
+                if not R['difficult'][jmax]:
+                    if not R['det'][jmax]:
+                        tp[thres][d] = 1.
+                        R['det'][jmax] = 1
+                    else:
+                        fp[thres][d] = 1.
+            else:
+                fp[thres][d] = 1.
 
     size_index = np.piecewise(obj_size, [obj_size<=size_range[0], \
         (obj_size>size_range[0])*(obj_size<=size_range[1]), obj_size>size_range[1]], [1,2,3])
     # calculate rec,prec,ap for small/medium/large objects
-    fp_size, tp_size, rec_size, prec_size, ap_size = ({} for i in range(5))
-    for x,xx in zip(size_list, [1,2,3]):
-        fp_size[x] = np.cumsum(fp[size_index==xx])
-        tp_size[x] = np.cumsum(tp[size_index==xx])
-        rec_size[x] = tp_size[x] / float(npos_size[x])
-        prec_size[x] = tp_size[x] / np.maximum(tp_size[x] + fp_size[x], np.finfo(np.float64).eps)
-        ap_size[x] = voc_ap(rec_size[x], prec_size[x], use_07_metric)
-
+    rec_thres, prec_thres, ap_thres = ({} for i in range(3))
+    for thres in ovthresh:
+        rec_thres[thres], prec_thres[thres], ap_thres[thres] =({} for i in range(3))
+        fp_size, tp_size, rec_size, prec_size, ap_size = ({} for i in range(5))
+        for x,xx in zip(size_list, [1,2,3]):
+            fp_size[x] = np.cumsum(fp[size_index==xx])
+            tp_size[x] = np.cumsum(tp[size_index==xx])
+            rec_size[x] = tp_size[x] / float(npos_size[x])
+            prec_size[x] = tp_size[x] / np.maximum(tp_size[x] + fp_size[x], np.finfo(np.float64).eps)
+            ap_size[x] = voc_ap(rec_size[x], prec_size[x], use_07_metric)
+        rec_thres[thres]['size'] = rec_size
+        prec_size[thres]['size'] = prec_size
+        ap_size[thres]['size'] = ap_size
         # compute precision recall
-    fp = np.cumsum(fp)
-    tp = np.cumsum(tp)
-    rec = tp / float(npos)
-        # avoid divide by zero in case the first detection matches a difficult
-        # ground truth
-    prec = tp / np.maximum(tp + fp, np.finfo(np.float64).eps)
-    ap = voc_ap(rec, prec, use_07_metric)
-
+        fp = np.cumsum(fp)
+        tp = np.cumsum(tp)
+        rec = tp / float(npos)
+            # avoid divide by zero in case the first detection matches a difficult
+            # ground truth
+        prec = tp / np.maximum(tp + fp, np.finfo(np.float64).eps)
+        ap = voc_ap(rec, prec, use_07_metric)
+        rec_thres[thres]['whole'] = rec
+        prec_thres[thres]['whole'] = prec
+        ap_thres[thres]['whole'] = ap
     # pdb.set_trace()
-    return rec, prec, ap, rec_size, prec_size, ap_size
+    # return rec, prec, ap, rec_size, prec_size, ap_size
+    return rec_thres, prec_thres, ap_thres

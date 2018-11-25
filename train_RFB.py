@@ -36,7 +36,7 @@ parser.add_argument('--iou_threshold', default='0.5,0.5,0.5',
                     type=str, help='Min Jaccard index for matching')
 parser.add_argument('--iou_param', default='1,1',
                     type=str, help='iou parameters (alpha, beta)')
-parser.add_argument('--adapt_param', default='.5',
+parser.add_argument('--adapt_param', default='0',
                     type=float, help='weight parameters for weight_iou threshold')
 parser.add_argument('--iou_type', default='orig',
                     type=str, help='iou value for each prior box')
