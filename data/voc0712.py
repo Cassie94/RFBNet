@@ -321,7 +321,6 @@ class VOCDetection(data.Dataset):
             # aps += [ap_thres['whole']]
 
             eval_res[cls] = {}
-            eval_res[]
             # for x in ['whole', 'size']:
             #     eval_res[x][cls] = {}
             for x,xx in zip(['rec', 'prec', 'ap'], [rec_thres, prec_thres, ap_thres]):
