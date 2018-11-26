@@ -167,40 +167,39 @@ if __name__ == '__main__':
         all_boxes = pickle.load(f)
         print('Evaluating detections')
         testset.evaluate_detections(all_boxes, save_folder)
-        return
-        
-    # load net
-    img_dim = (300,512)[args.size=='512']
-    num_classes = (21, 81)[args.dataset == 'COCO']
-    net = build_net('test', img_dim, num_classes)    # initialize detector
-    state_dict = torch.load(args.trained_model, map_location='cuda:{}'.format(gpu_id))
-    # create new OrderedDict that does not contain `module.`
-
-    from collections import OrderedDict
-    new_state_dict = OrderedDict()
-    for k, v in state_dict.items():
-        head = k[:7]
-        if head == 'module.':
-            name = k[7:] # remove `module.`
-        else:
-            name = k
-        new_state_dict[name] = v
-    net.load_state_dict(new_state_dict)
-    net.eval()
-    print('Finished loading model!')
-    print(net)
-
-    if args.cuda:
-        net = net.cuda()
-        cudnn.benchmark = True
     else:
-        net = net.cpu()
-    # evaluation
-    #top_k = (300, 200)[args.dataset == 'COCO']
-    top_k = 200
-    detector = Detect(num_classes,0,cfg)
-    save_folder = os.path.join(args.save_folder,args.dataset)
-    rgb_means = ((104, 117, 123),(103.94,116.78,123.68))[args.version == 'RFB_mobile']
-    test_net(save_folder, net, detector, args.cuda, testset,
-             BaseTransform(net.size, rgb_means, (2, 0, 1)),
-             top_k, thresh=0.01)
+        # load net
+        img_dim = (300,512)[args.size=='512']
+        num_classes = (21, 81)[args.dataset == 'COCO']
+        net = build_net('test', img_dim, num_classes)    # initialize detector
+        state_dict = torch.load(args.trained_model, map_location='cuda:{}'.format(gpu_id))
+        # create new OrderedDict that does not contain `module.`
+
+        from collections import OrderedDict
+        new_state_dict = OrderedDict()
+        for k, v in state_dict.items():
+            head = k[:7]
+            if head == 'module.':
+                name = k[7:] # remove `module.`
+            else:
+                name = k
+            new_state_dict[name] = v
+        net.load_state_dict(new_state_dict)
+        net.eval()
+        print('Finished loading model!')
+        print(net)
+
+        if args.cuda:
+            net = net.cuda()
+            cudnn.benchmark = True
+        else:
+            net = net.cpu()
+        # evaluation
+        #top_k = (300, 200)[args.dataset == 'COCO']
+        top_k = 200
+        detector = Detect(num_classes,0,cfg)
+        save_folder = os.path.join(args.save_folder,args.dataset)
+        rgb_means = ((104, 117, 123),(103.94,116.78,123.68))[args.version == 'RFB_mobile']
+        test_net(save_folder, net, detector, args.cuda, testset,
+                 BaseTransform(net.size, rgb_means, (2, 0, 1)),
+                 top_k, thresh=0.01)
