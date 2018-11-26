@@ -40,7 +40,6 @@ parser.add_argument('--retest', default=False, action='store_true',
 
 args = parser.parse_args()
 gpu_id = args.gpu
-torch.cuda.set_device(gpu_id)
 
 args.save_folder = os.path.join('eval', '-'.join(args.trained_model.split('/')[-2:]))
 if not os.path.exists(args.save_folder):
@@ -65,6 +64,7 @@ priorbox = PriorBox(cfg)
 with torch.no_grad():
     priors = priorbox.forward()
     if args.cuda:
+        torch.cuda.set_device(gpu_id)
         priors = priors.cuda()
 
 
