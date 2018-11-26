@@ -236,12 +236,12 @@ def voc_eval(detpath,
         prec_thres[thres]['size'] = prec_size
         ap_thres[thres]['size'] = ap_size
         # compute precision recall
-        fp = np.cumsum(fp)
-        tp = np.cumsum(tp)
-        rec = tp / float(npos)
+        fp_whole = np.cumsum(fp[thres])
+        tp_whole = np.cumsum(tp[thres])
+        rec = tp_whole / float(npos)
             # avoid divide by zero in case the first detection matches a difficult
             # ground truth
-        prec = tp / np.maximum(tp + fp, np.finfo(np.float64).eps)
+        prec = tp_whole / np.maximum(tp_whole + fp_whole, np.finfo(np.float64).eps)
         ap = voc_ap(rec, prec, use_07_metric)
         rec_thres[thres]['whole'] = rec
         prec_thres[thres]['whole'] = prec
