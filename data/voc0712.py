@@ -315,26 +315,22 @@ class VOCDetection(data.Dataset):
             rec_thres, prec_thres, ap_thres = voc_eval(
                                     filename, annopath, imagesetfile, cls, cachedir, ovthresh=[0.5,0.7],
                                     use_07_metric=use_07_metric)
-            # aps += [ap_thres['whole']]
-
             eval_res[cls] = {}
             for x,xx in zip(['rec', 'prec', 'ap'], [rec_thres, prec_thres, ap_thres]):
                 eval_res[cls][x] = xx
 
             for k,v in ap_thres.items():
                 print('AP for {} at {} = {:.4f}'.format(cls, str(k), v['whole']))
+                aps += v['whole']
                 for k in size_list:
                     print('AP for {} object of {} at {} = {:.4f}'.format(k, cls, str(k), v['size'][k]))
-                # aps_size[k] += [ap_thres['size'][k]]
+                    aps_size[k] += v['size'][k]
             if output_dir is not None:
                 with open(os.path.join(output_dir, cls + '_pr.pkl'), 'wb') as f:
                     pickle.dump({'rec': rec_thres, 'prec': prec_thres, 'ap': ap_thres}, f)
-        # print('Mean AP = {:.4f}'.format(np.mean(aps)))
-        pdb.set_trace()
-        # for k in size_list:
-        #     eval_res['size'][k] = {}
-        #     eval_res['size'][k]['mean-AP'] = np.mean(aps_size[k]).round(4)
-        #     print('Mean AP for {} objects: {:.4f}'.format(k, np.mean(aps_size[k])))
+        print('Mean AP = {:.4f}'.format(np.mean(aps)))
+        for k in size_list:
+            print('Mean AP for {} objects: {:.4f}'.format(k, np.mean(aps_size[k])))
         with open(os.path.join(output_dir, 'detect_ap.pkl'), 'wb') as fp:
             pickle.dump(eval_res, fp)
         # print('~~~~~~~~')
