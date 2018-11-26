@@ -79,14 +79,14 @@ def test_net(save_folder, net, detector, cuda, testset, transform, max_per_image
                  for _ in range(num_classes)]
 
     _t = {'im_detect': Timer(), 'misc': Timer()}
-    det_file = os.path.join(save_folder, 'detections.pkl')
-
-    if args.retest:
-        f = open(det_file,'rb')
-        all_boxes = pickle.load(f)
-        print('Evaluating detections')
-        testset.evaluate_detections(all_boxes, save_folder)
-        return
+    # det_file = os.path.join(save_folder, 'detections.pkl')
+    #
+    # if args.retest:
+    #     f = open(det_file,'rb')
+    #     all_boxes = pickle.load(f)
+    #     print('Evaluating detections')
+    #     testset.evaluate_detections(all_boxes, save_folder)
+    #     return
 
 
     for i in range(num_images):
@@ -150,6 +150,25 @@ def test_net(save_folder, net, detector, cuda, testset, transform, max_per_image
 
 
 if __name__ == '__main__':
+    det_file = os.path.join(save_folder, 'detections.pkl')
+    # load data
+    if args.dataset == 'VOC':
+        testset = VOCDetection(
+            VOCroot, [('2007', 'test')], None, AnnotationTransform())
+    elif args.dataset == 'COCO':
+        testset = COCODetection(
+            COCOroot, [('2014', 'minival')], None)
+            #COCOroot, [('2015', 'test-dev')], None)
+    else:
+        print('Only VOC and COCO dataset are supported now!')
+
+    if args.retest:
+        f = open(det_file,'rb')
+        all_boxes = pickle.load(f)
+        print('Evaluating detections')
+        testset.evaluate_detections(all_boxes, save_folder)
+        return
+        
     # load net
     img_dim = (300,512)[args.size=='512']
     num_classes = (21, 81)[args.dataset == 'COCO']
@@ -170,16 +189,7 @@ if __name__ == '__main__':
     net.eval()
     print('Finished loading model!')
     print(net)
-    # load data
-    if args.dataset == 'VOC':
-        testset = VOCDetection(
-            VOCroot, [('2007', 'test')], None, AnnotationTransform())
-    elif args.dataset == 'COCO':
-        testset = COCODetection(
-            COCOroot, [('2014', 'minival')], None)
-            #COCOroot, [('2015', 'test-dev')], None)
-    else:
-        print('Only VOC and COCO dataset are supported now!')
+
     if args.cuda:
         net = net.cuda()
         cudnn.benchmark = True
