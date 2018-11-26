@@ -16,6 +16,7 @@ import torch.utils.data as data
 import torchvision.transforms as transforms
 from PIL import Image, ImageDraw, ImageFont
 import cv2
+from IPython import embed
 import numpy as np
 from .voc_eval import voc_eval
 if sys.version_info[0] == 2:
@@ -323,6 +324,7 @@ class VOCDetection(data.Dataset):
 
             for k,v in ap_thres.items():
                 print('AP for {} at {} = {:.4f}'.format(cls, str(k), v['whole']))
+                pdb.set_trace()
                 aps[k] += v['whole']
                 for size in size_list:
                     print('AP for {} object of {} at {} = {:.4f}'.format(size, cls, str(k), v['size'][size]))
@@ -331,6 +333,7 @@ class VOCDetection(data.Dataset):
                 with open(os.path.join(output_dir, cls + '_pr.pkl'), 'wb') as f:
                     pickle.dump({'rec': rec_thres, 'prec': prec_thres, 'ap': ap_thres}, f)
         for thres in thres_list:
+            pdb.set_trace()
             print('Mean AP at {} = {:.4f}'.format(str(thres), np.mean(aps[thres])))
             eval_res['whole'][thres] = np.mean(aps[thres])
             for k in size_list:
