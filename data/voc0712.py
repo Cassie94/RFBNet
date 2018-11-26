@@ -333,11 +333,11 @@ class VOCDetection(data.Dataset):
                     pickle.dump({'rec': rec_thres, 'prec': prec_thres, 'ap': ap_thres}, f)
         for thres in thres_list:
             print('Mean AP at {} = {:.4f}'.format(str(thres), np.mean(aps[thres])))
-            eval_res['whole'][thres] = np.mean(aps[thres])
+            eval_res['whole'][thres] = np.mean(aps[thres]).round(4)
             eval_res['size'][thres] = {}
             for k in size_list:
                 print('Mean AP for {} objects at {}: {:.4f}'.format(k, str(thres), np.mean(aps_size[thres][k])))
-                eval_res['size'][thres][k] = np.mean(aps_size[thres][k])
+                eval_res['size'][thres][k] = np.mean(aps_size[thres][k]).round(4)
         with open(os.path.join(output_dir, 'detect_ap.pkl'), 'wb') as fp:
             pickle.dump(eval_res, fp)
         # print('~~~~~~~~')
