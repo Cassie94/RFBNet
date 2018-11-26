@@ -339,7 +339,7 @@ class VOCDetection(data.Dataset):
             for k,v in ap_thres.items():
                 print('AP for {} at {} = {:.4f}'.format(cls, str(k), v['whole']))
                 for k in size_list:
-                print('AP for {} object of {} at {} = {:.4f}'.format(k, cls, str(k), v['size'][k]))
+                    print('AP for {} object of {} at {} = {:.4f}'.format(k, cls, str(k), v['size'][k]))
                 # aps_size[k] += [ap_thres['size'][k]]
             if output_dir is not None:
                 with open(os.path.join(output_dir, cls + '_pr.pkl'), 'wb') as f:
