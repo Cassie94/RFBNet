@@ -150,6 +150,7 @@ def test_net(save_folder, net, detector, cuda, testset, transform, max_per_image
 
 
 if __name__ == '__main__':
+    save_folder = os.path.join(args.save_folder,args.dataset)
     det_file = os.path.join(save_folder, 'detections.pkl')
     # load data
     if args.dataset == 'VOC':
@@ -198,7 +199,6 @@ if __name__ == '__main__':
         #top_k = (300, 200)[args.dataset == 'COCO']
         top_k = 200
         detector = Detect(num_classes,0,cfg)
-        save_folder = os.path.join(args.save_folder,args.dataset)
         rgb_means = ((104, 117, 123),(103.94,116.78,123.68))[args.version == 'RFB_mobile']
         test_net(save_folder, net, detector, args.cuda, testset,
                  BaseTransform(net.size, rgb_means, (2, 0, 1)),
