@@ -149,7 +149,7 @@ def voc_eval(detpath,
         npos_size[size_list[2]] += sum((size > size_range[1]) & (~difficult))
         det_index[imagename] = {}
         for thres in ovthresh:
-            det_index[imagename][thres] = det
+            det_index[imagename][thres] = [False] * len(R)
         class_recs[imagename] = {'bbox': bbox,
                                  'difficult': difficult,
                                  'det': det,
