@@ -133,6 +133,7 @@ def voc_eval(detpath,
     npos = 0
     npos_size = {}
     size_list = ['small', 'medium', 'large']
+    det_index = {}
     for x in size_list:
         npos_size[x] = 0
     for imagename in imagenames:
@@ -146,6 +147,9 @@ def voc_eval(detpath,
         npos_size[size_list[0]] += sum((size <= size_range[0]) & (~difficult))
         npos_size[size_list[1]] += sum((size > size_range[0]) & (size < size_range[1]) & (~difficult))
         npos_size[size_list[2]] += sum((size > size_range[1]) & (~difficult))
+        det_index[imagename] = {}
+        for thres in ovthresh:
+            det_index[imagename][thres] = det
         class_recs[imagename] = {'bbox': bbox,
                                  'difficult': difficult,
                                  'det': det,
@@ -177,6 +181,7 @@ def voc_eval(detpath,
     obj_size = np.zeros(nd)
     for d in range(nd):
         R = class_recs[image_ids[d]]
+        det = det_index[image_ids[d]]
         bb = BB[d, :].astype(float)
         ovmax = -np.inf
         BBGT = R['bbox'].astype(float)
@@ -205,14 +210,12 @@ def voc_eval(detpath,
         else:
             obj_size[d] = (bb[2] - bb[0]) * (bb[3] - bb[1]) / (img_size[0] * img_size[1])
 
-        det_index = {}
         for thres in ovthresh:
-            det_index[thres] = R['det']
             if ovmax > thres:
                 if not R['difficult'][jmax]:
-                    if not det_index[thres][jmax]:
+                    if not det[thres][jmax]:
                         tp[thres][d] = 1.
-                        R['det'][jmax] = 1
+                        det[thres][jmax] = 1
                     else:
                         fp[thres][d] = 1.
             else:
