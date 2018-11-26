@@ -336,10 +336,10 @@ class VOCDetection(data.Dataset):
             #     for kk in size_list:
             #         eval_res['size'][cls][kk] = {}
             #         eval_res['size'][cls][kk][x] = xx[kk].round(4)
-
-            print('AP for {} = {:.4f}'.format(cls, ap_thres['whole']))
-            for k in size_list:
-                print('AP for {} object of {} = {:.4f}'.format(k, cls, ap_thres['size'][k]))
+            for k,v in ap_thres.items():
+                print('AP for {} at {} = {:.4f}'.format(cls, str(k), v['whole']))
+                for k in size_list:
+                print('AP for {} object of {} at {} = {:.4f}'.format(k, cls, str(k), v['size'][k]))
                 # aps_size[k] += [ap_thres['size'][k]]
             if output_dir is not None:
                 with open(os.path.join(output_dir, cls + '_pr.pkl'), 'wb') as f:
