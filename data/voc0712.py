@@ -296,12 +296,12 @@ class VOCDetection(data.Dataset):
         cachedir = os.path.join(self.root, 'annotations_cache')
         aps, aps_size = ({} for i in range(2))
         thres_list = [0.5, 0.7]
+        size_list = ['small', 'medium', 'large']
         for x in thres_list:
             aps[x] = []
             aps_size[x] = {}
-        size_list = ['small', 'medium', 'large']
-        for x in size_list:
-            aps_size[x] = []
+            for xx in size_list:
+                aps_size[x][xx] = []
         eval_res = {'whole':{}, 'size':{}}
         # The PASCAL VOC metric changed in 2010
         use_07_metric = True if int(self._year) < 2010 else False
