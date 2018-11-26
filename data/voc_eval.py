@@ -170,11 +170,11 @@ def voc_eval(detpath,
 
         # go down dets and mark TPs and FPs
     nd = len(image_ids)
-    tp = {}
-    fp = {}
+    tp, tp, det_index= ({} for i in range(3))
     for thres in ovthresh:
         tp[thres] = np.zeros(nd)
         fp[thres] = np.zeros(nd)
+        det_index[thres] = R['det']
     # tp = np.zeros(nd)
     # fp = np.zeros(nd)
     obj_size = np.zeros(nd)
@@ -208,10 +208,12 @@ def voc_eval(detpath,
         else:
             obj_size[d] = (bb[2] - bb[0]) * (bb[3] - bb[1]) / (img_size[0] * img_size[1])
 
+        det_index = {}
         for thres in ovthresh:
+            det_index[thres] = R['det']
             if ovmax > thres:
                 if not R['difficult'][jmax]:
-                    if not R['det'][jmax]:
+                    if not det_index[thres][jmax]:
                         tp[thres][d] = 1.
                         R['det'][jmax] = 1
                     else:
@@ -246,6 +248,6 @@ def voc_eval(detpath,
         rec_thres[thres]['whole'] = rec
         prec_thres[thres]['whole'] = prec
         ap_thres[thres]['whole'] = ap
-    # pdb.set_trace()
+    pdb.set_trace()
     # return rec, prec, ap, rec_size, prec_size, ap_size
     return rec_thres, prec_thres, ap_thres

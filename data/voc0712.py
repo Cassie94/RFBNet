@@ -312,9 +312,6 @@ class VOCDetection(data.Dataset):
                 continue
 
             filename = self._get_voc_results_file_template().format(cls)
-            # rec, prec, ap, rec_size, prec_size, ap_size = voc_eval(
-            #                         filename, annopath, imagesetfile, cls, cachedir, ovthresh= 0.5,
-            #                         use_07_metric=use_07_metric)
             rec_thres, prec_thres, ap_thres = voc_eval(
                                     filename, annopath, imagesetfile, cls, cachedir, ovthresh=[0.5,0.7],
                                     use_07_metric=use_07_metric)
@@ -323,17 +320,7 @@ class VOCDetection(data.Dataset):
             eval_res[cls] = {}
             for x,xx in zip(['rec', 'prec', 'ap'], [rec_thres, prec_thres, ap_thres]):
                 eval_res[cls][x] = xx
-                # eval_res['whole'][cls][x] = xx['whole']
-                # for kk in size_list:
-                #     eval_res['size'][cls][kk] = {}
-                #     eval_res['size'][cls][kk][x] = xx['size'][kk].round(4)
 
-            # for x,xx in zip(['rec', 'prec', 'ap'], [rec,prec, ap]):
-            #     eval_res['whole'][cls][x] = xx
-            # for x,xx in zip(['rec', 'prec', 'ap'], [rec_size,prec_size, ap_size]):
-            #     for kk in size_list:
-            #         eval_res['size'][cls][kk] = {}
-            #         eval_res['size'][cls][kk][x] = xx[kk].round(4)
             for k,v in ap_thres.items():
                 print('AP for {} at {} = {:.4f}'.format(cls, str(k), v['whole']))
                 for k in size_list:
