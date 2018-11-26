@@ -294,13 +294,15 @@ class VOCDetection(data.Dataset):
                                 'Main',
                                 name+'.txt')
         cachedir = os.path.join(self.root, 'annotations_cache')
-        aps = []
-        aps_size = {}
+        aps, aps_size = ({} for i in range(2))
+        thres_list = [0.5, 0.7]
+        for x in thres_list:
+            aps[x] = []
+            aps_size[x] = {}
         size_list = ['small', 'medium', 'large']
         for x in size_list:
             aps_size[x] = []
-        # eval_res = {'whole':{}, 'size':{}}
-        eval_res = {}
+        eval_res = {'whole':{}, 'size':{}}
         # The PASCAL VOC metric changed in 2010
         use_07_metric = True if int(self._year) < 2010 else False
         print('VOC07 metric? ' + ('Yes' if use_07_metric else 'No'))
@@ -313,7 +315,7 @@ class VOCDetection(data.Dataset):
 
             filename = self._get_voc_results_file_template().format(cls)
             rec_thres, prec_thres, ap_thres = voc_eval(
-                                    filename, annopath, imagesetfile, cls, cachedir, ovthresh=[0.5,0.7],
+                                    filename, annopath, imagesetfile, cls, cachedir, ovthresh=thres_list,
                                     use_07_metric=use_07_metric)
             eval_res[cls] = {}
             for x,xx in zip(['rec', 'prec', 'ap'], [rec_thres, prec_thres, ap_thres]):
@@ -321,16 +323,19 @@ class VOCDetection(data.Dataset):
 
             for k,v in ap_thres.items():
                 print('AP for {} at {} = {:.4f}'.format(cls, str(k), v['whole']))
-                aps += v['whole']
-                for k in size_list:
-                    print('AP for {} object of {} at {} = {:.4f}'.format(k, cls, str(k), v['size'][k]))
-                    aps_size[k] += v['size'][k]
+                aps[k] += v['whole']
+                for size in size_list:
+                    print('AP for {} object of {} at {} = {:.4f}'.format(size, cls, str(k), v['size'][size]))
+                    aps_size[k][size] += v['size'][size]
             if output_dir is not None:
                 with open(os.path.join(output_dir, cls + '_pr.pkl'), 'wb') as f:
                     pickle.dump({'rec': rec_thres, 'prec': prec_thres, 'ap': ap_thres}, f)
-        print('Mean AP = {:.4f}'.format(np.mean(aps)))
-        for k in size_list:
-            print('Mean AP for {} objects: {:.4f}'.format(k, np.mean(aps_size[k])))
+        for thres in thres_list:
+            print('Mean AP at {} = {:.4f}'.format(str(thres), np.mean(ap[thres])))
+            eval_res['whole'][thres] = np.means(aps[thres])
+            for k in size_list:
+                print('Mean AP for {} objects: {:.4f}'.format(k, np.mean(aps_size[thres][k])))
+                eval_res['size'][thres] = np.mean(aps_size[thres][k])
         with open(os.path.join(output_dir, 'detect_ap.pkl'), 'wb') as fp:
             pickle.dump(eval_res, fp)
         # print('~~~~~~~~')
