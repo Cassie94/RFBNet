@@ -64,7 +64,7 @@ priorbox = PriorBox(cfg)
 with torch.no_grad():
     priors = priorbox.forward()
     if args.cuda:
-        torch.cuda.set_device(gpu_id)
+        # torch.cuda.set_device(gpu_id)
         priors = priors.cuda()
 
 
@@ -79,15 +79,6 @@ def test_net(save_folder, net, detector, cuda, testset, transform, max_per_image
                  for _ in range(num_classes)]
 
     _t = {'im_detect': Timer(), 'misc': Timer()}
-    # det_file = os.path.join(save_folder, 'detections.pkl')
-    #
-    # if args.retest:
-    #     f = open(det_file,'rb')
-    #     all_boxes = pickle.load(f)
-    #     print('Evaluating detections')
-    #     testset.evaluate_detections(all_boxes, save_folder)
-    #     return
-
 
     for i in range(num_images):
         img = testset.pull_image(i)
