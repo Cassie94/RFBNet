@@ -248,5 +248,4 @@ def voc_eval(detpath,
         rec_thres[thres]['whole'] = rec
         prec_thres[thres]['whole'] = prec
         ap_thres[thres]['whole'] = ap
-    pdb.set_trace()
     return rec_thres, prec_thres, ap_thres
