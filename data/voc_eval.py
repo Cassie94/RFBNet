@@ -211,7 +211,7 @@ def voc_eval(detpath,
             obj_size[d] = (bb[2] - bb[0]) * (bb[3] - bb[1]) / (img_size[0] * img_size[1])
 
         for thres in ovthresh:
-            pdb.set_trace()
+            # pdb.set_trace()
             if ovmax > thres:
                 if not R['difficult'][jmax]:
                     if not det[thres][jmax]:
