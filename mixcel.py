@@ -96,6 +96,21 @@ for kk in ratio_list:
         df_50[k+'_'+kk] = iou_des_dict[k][kk]
 df_50.round(3)
 
+import pandas as pd
+ap_res = {
+'ap_baseline' : [80.4, 51.5, 81.4, 87.1, 65.4, 33.5, 66.0, 78.0],
+'ap_thres(.35/.5/.5)' : [79.4, 54.4, 80.0, 86.5, 63.7, 38.1, 62.9, 76.9],
+'ap_max_iou(2,.5)' : [79.9, 54.1, 81.0, 86.7, 63.0, 35.2, 62.5, 76.7],
+'ap_weight_iou(2, .5)' : [78.9, 53.2, 80.2, 84.5, 62.0, 34.9, 62.2, 74.6],
+'ap_max_iou_thres(2,.5,.45/.45/.45)': [ 79.0, 54.2, 80.1, 86.3, 61.6, 35.2, 62.5, 75.1],
+'ap_max_iou(1.2,.8)': [80.5, 52.5, 81.6, 86.4, 65.1, 34.9, 65.7, 77.1],
+'ap_max_iou_thres(1.2,.8,.4/.5/.5)': [79.9, 54.7, 80.5, 86.6, 63.8, 37.4, 63.8, 76.0],
+'ap_max_iou_thres(1.5,.65,.4/.5/.5)': [79.7, 56.4, 80.2, 85.6, 62.3, 37.6, 62.4, 74.5]
+}
+ap_df = pd.DataFrame.from_dict(ap_res, orient='index', \
+    columns=['ap@.5', 'small@.5', 'medium@.5', 'large@.5', \
+    'ap@.7', 'small@.7', 'medium@.7', 'large@.7'])
+print(ap_df)
 
 gt_dist.insert(loc=1,column='ratio',value=gt_dist['count'].div(gt_dist['count'].sum()))
 gt_dist.insert(loc=2,column='cumsum',value=gt_dist['proportion'].cumsum())

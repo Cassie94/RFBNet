@@ -44,7 +44,7 @@ parser.add_argument('--soft_label', default=False,
                     action='store_true', help='Use soft-label for classification')
 parser.add_argument('-b', '--batch_size', default=32,
                     type=int, help='Batch size for training')
-parser.add_argument('--num_workers', default=8,
+parser.add_argument('--num_workers', default=None,
                     type=int, help='Number of workers used in dataloading')
 parser.add_argument('--cuda', default=True,
                     type=bool, help='Use cuda to train model')
@@ -229,11 +229,15 @@ def train():
         start_iter = 0
 
     lr = args.lr
+    if args.num_workers==None:
+        num_workers = 8*len(gpu_list)
+    else:
+        num_workers = args.num_workers
     for iteration in range(start_iter, max_iter):
         if iteration % epoch_size == 0:
             # create batch iterator
             batch_iterator = iter(data.DataLoader(dataset, batch_size,
-                                                  shuffle=True, num_workers=args.num_workers, collate_fn=detection_collate))
+                                                  shuffle=True, num_workers=num_workers, collate_fn=detection_collate))
             loc_loss = 0
             conf_loss = 0
             if (epoch % 10 == 0 and epoch > 0) or (epoch % 5 ==0 and epoch > 200):
