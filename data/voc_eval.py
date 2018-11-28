@@ -222,7 +222,6 @@ def voc_eval(detpath,
             # pdb.set_trace()
             if sorted_scores[d] > gt_score[jmax]:
                 gt_score[jmax] = sorted_scores[d]
-            if ovmax > gt_iou[jmax]:
                 gt_iou[jmax] = ovmax
         else:
             obj_size[d] = (bb[2] - bb[0]) * (bb[3] - bb[1]) / (img_size[0] * img_size[1])
