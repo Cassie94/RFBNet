@@ -270,7 +270,6 @@ class VOCDetection(data.Dataset):
                 continue
             print('Writing {} VOC results file'.format(cls))
             filename = self._get_voc_results_file_template().format(cls)
-            pdb.set_trace()
             with open(filename, 'wt') as f:
                 for im_ind, index in enumerate(self.ids):
                     index = index[1]
