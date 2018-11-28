@@ -239,13 +239,13 @@ def voc_eval(detpath,
             else:
                 fp[thres][d] = 1.
 
-    size_list, score_list, iou_list = ([] for i in range(3))
+    size_res, score_res, iou_res = ([] for i in range(3))
     nms_list = {}
     for thres in ovthresh:
         nms_list[thres] = []
     for k,v in class_recs.items():
         if len(v['max_score']) > 0:
-            for x,xx in zip([score_list, iou_list, size_list], ['max_score', 'max_overlap', 'size']):
+            for x,xx in zip([score_res, iou_res, size_res], ['max_score', 'max_overlap', 'size']):
                 x += list(v[xx])
             for kk,vv in v['nms_count'].items():
                 nms_list[kk] += vv
@@ -278,4 +278,4 @@ def voc_eval(detpath,
         rec_thres[thres]['whole'] = rec
         prec_thres[thres]['whole'] = prec
         ap_thres[thres]['whole'] = ap
-    return rec_thres, prec_thres, ap_thres, size_list, score_list, iou_list, nms_list
+    return rec_thres, prec_thres, ap_thres, size_res, score_res, iou_res,nms_list

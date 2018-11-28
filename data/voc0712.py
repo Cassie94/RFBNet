@@ -315,12 +315,12 @@ class VOCDetection(data.Dataset):
                 continue
 
             filename = self._get_voc_results_file_template().format(cls)
-            rec_thres, prec_thres, ap_thres, size_list, score_list, iou_list, \
+            rec_thres, prec_thres, ap_thres, size_res, score_res, iou_res, \
                 nms_list = voc_eval( filename, annopath, imagesetfile, cls, \
                 cachedir, ovthresh=thres_list, use_07_metric=use_07_metric)
             eval_res[cls] = {}
             for x,xx in zip(['rec', 'prec', 'ap', 'gt_size', 'gt_score', 'gt_iou', 'gt_nms'], \
-                [rec_thres, prec_thres, ap_thres, size_list, score_list, iou_list, nms_list]):
+                [rec_thres, prec_thres, ap_thres, size_res, score_res, iou_res, nms_list]):
                 eval_res[cls][x] = xx
 
             for k,v in ap_thres.items():
