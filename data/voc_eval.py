@@ -151,7 +151,7 @@ def voc_eval(detpath,
         det_index[imagename] = {}
         max_score = [-1] * len(R)
         max_overlap = [-1] * len(R)
-        max_score, max_overlap, nms_count = ({} for i in range(3))
+        nms_count = {}
         for thres in ovthresh:
             det_index[imagename][thres] = [False] * len(R)
             nms_count[thres] = [0] * len(R)
@@ -219,7 +219,7 @@ def voc_eval(detpath,
             ovmax = np.max(overlaps)
             jmax = np.argmax(overlaps)
             obj_size[d] = R['size'][jmax]
-            pdb.set_trace()
+            # pdb.set_trace()
             if sorted_scores[d] > gt_score[jmax]:
                 gt_score[jmax] = sorted_scores[d]
             if ovmax > gt_iou[jmax]:
