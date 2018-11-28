@@ -127,7 +127,7 @@ def voc_eval(detpath,
         # load
         with open(cachefile, 'rb') as f:
             recs = pickle.load(f)
-    pdb.set_trace()
+    # pdb.set_trace()
     # extract gt objects for this class
     class_recs = {}
     npos = 0
@@ -238,6 +238,13 @@ def voc_eval(detpath,
             else:
                 fp[thres][d] = 1.
 
+    size_list, score_list, iou_list, nms_list = ([] for i in range(4))
+    for k,v in class_recs.items():
+        if len(v['max_score'][0.5]) > 0:
+            nms_list += v['nms_list'][0.5]
+            for x,xx in zip([score_list, iou_list, size_list], ['max_score', 'max_overlap', 'size']):
+                x += list(v[xx])
+
     size_index = np.piecewise(obj_size, [obj_size<=size_range[0], \
         (obj_size>size_range[0])*(obj_size<=size_range[1]), obj_size>size_range[1]], [1,2,3])
     # calculate rec,prec,ap for small/medium/large objects
@@ -265,4 +272,4 @@ def voc_eval(detpath,
         rec_thres[thres]['whole'] = rec
         prec_thres[thres]['whole'] = prec
         ap_thres[thres]['whole'] = ap
-    return rec_thres, prec_thres, ap_thres
+    return rec_thres, prec_thres, ap_thres, size_list, score_list, iou_list, nms_list
