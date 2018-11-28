@@ -194,7 +194,7 @@ def voc_eval(detpath,
         bb = BB[d, :].astype(float)
         ovmax = -np.inf
         BBGT = R['bbox'].astype(float)
-        gt_iou = R['max_overlaps']
+        gt_iou = R['max_overlap']
         gt_score = R['max_score']
         gt_nms_count = R['nms_count']
         img_size = R['img_size']
