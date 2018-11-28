@@ -127,14 +127,14 @@ def voc_eval(detpath,
         # load
         with open(cachefile, 'rb') as f:
             recs = pickle.load(f)
-
+    pdb.set_trace()
     # extract gt objects for this class
     class_recs = {}
     npos = 0
     npos_size = {}
     size_list = ['small', 'medium', 'large']
     det_index = {}
-    pdb.set_trace()
+
     for x in size_list:
         npos_size[x] = 0
     for imagename in imagenames:
@@ -149,11 +149,18 @@ def voc_eval(detpath,
         npos_size[size_list[1]] += sum((size > size_range[0]) & (size < size_range[1]) & (~difficult))
         npos_size[size_list[2]] += sum((size > size_range[1]) & (~difficult))
         det_index[imagename] = {}
+        max_score, max_overlap, nms_count = ({} for i in range(2))
         for thres in ovthresh:
             det_index[imagename][thres] = [False] * len(R)
+            max_score[thres] = [-1] * len(R)
+            max_overlap[thres] = [-1] * len(R)
+            nms_count[thres] = [0] * len(R)
         class_recs[imagename] = {'bbox': bbox,
                                  'difficult': difficult,
                                  'det': det,
+                                 'max_score': max_score,
+                                 'max_overlap': max_overlap,
+                                 'nms_count': nms_count,
                                  'size': size,
                                  'img_size': img_size}
 
@@ -169,7 +176,8 @@ def voc_eval(detpath,
 
         # sort by confidence
     sorted_ind = np.argsort(-confidence)
-    sorted_scores = np.sort(-confidence)
+    sorted_scores = confidence[sorted_ind]
+    # sorted_scores = np.sort(-confidence)
     BB = BB[sorted_ind, :]
     image_ids = [image_ids[x] for x in sorted_ind]
 
@@ -186,6 +194,9 @@ def voc_eval(detpath,
         bb = BB[d, :].astype(float)
         ovmax = -np.inf
         BBGT = R['bbox'].astype(float)
+        gt_iou = R['max_overlaps']
+        gt_score = R['max_score']
+        gt_nms_count = R['nms_count']
         img_size = R['img_size']
 
         if BBGT.size > 0:
@@ -217,8 +228,11 @@ def voc_eval(detpath,
                     if not det[thres][jmax]:
                         tp[thres][d] = 1.
                         det[thres][jmax] = 1
+                        gt_score[thres][jmax] = sorted_scores[d]
+                        gt_iou[thres][jmax] = ovmax
                     else:
                         fp[thres][d] = 1.
+                        gt_nms_count[thres][jmax] += 1
             else:
                 fp[thres][d] = 1.
 
