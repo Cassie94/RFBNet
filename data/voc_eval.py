@@ -219,6 +219,7 @@ def voc_eval(detpath,
             ovmax = np.max(overlaps)
             jmax = np.argmax(overlaps)
             obj_size[d] = R['size'][jmax]
+            pdb.set_trace()
             if sorted_scores[d] > gt_score[jmax]:
                 gt_score[jmax] = sorted_scores[d]
             if ovmax > gt_iou[jmax]:
