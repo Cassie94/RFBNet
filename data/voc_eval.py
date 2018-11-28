@@ -149,7 +149,7 @@ def voc_eval(detpath,
         npos_size[size_list[1]] += sum((size > size_range[0]) & (size < size_range[1]) & (~difficult))
         npos_size[size_list[2]] += sum((size > size_range[1]) & (~difficult))
         det_index[imagename] = {}
-        max_score, max_overlap, nms_count = ({} for i in range(2))
+        max_score, max_overlap, nms_count = ({} for i in range(3))
         for thres in ovthresh:
             det_index[imagename][thres] = [False] * len(R)
             max_score[thres] = [-1] * len(R)
