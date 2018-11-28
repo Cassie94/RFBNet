@@ -241,7 +241,7 @@ def voc_eval(detpath,
 
     size_list, score_list, iou_list, nms_list = ([] for i in range(4))
     for k,v in class_recs.items():
-        if len(v['max_score'][0.5]) > 0:
+        if len(v['max_score']) > 0:
             nms_list += v['nms_list'][0.5]
             for x,xx in zip([score_list, iou_list, size_list], ['max_score', 'max_overlap', 'size']):
                 x += list(v[xx])
