@@ -247,7 +247,7 @@ def voc_eval(detpath,
         if len(v['max_score']) > 0:
             for x,xx in zip([score_list, iou_list, size_list], ['max_score', 'max_overlap', 'size']):
                 x += list(v[xx])
-            for kk,vv in v['nms_count']:
+            for kk,vv in v['nms_count'].items():
                 nms_list[kk] += vv
 
     size_index = np.piecewise(obj_size, [obj_size<=size_range[0], \
