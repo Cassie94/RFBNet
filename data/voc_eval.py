@@ -134,6 +134,7 @@ def voc_eval(detpath,
     npos_size = {}
     size_list = ['small', 'medium', 'large']
     det_index = {}
+    pdb.set_trace()
     for x in size_list:
         npos_size[x] = 0
     for imagename in imagenames:
