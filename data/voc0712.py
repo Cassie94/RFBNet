@@ -296,7 +296,7 @@ class VOCDetection(data.Dataset):
                                 name+'.txt')
         cachedir = os.path.join(self.root, 'annotations_cache')
         aps, aps_size = ({} for i in range(2))
-        thres_list = [0.5, 0.7]
+        thres_list = [0.4, 0.5, 0.7]
         size_list = ['small', 'medium', 'large']
         for x in thres_list:
             aps[x] = []
