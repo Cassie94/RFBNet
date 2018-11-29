@@ -149,8 +149,9 @@ def voc_eval(detpath,
         npos_size[size_list[1]] += sum((size > size_range[0]) & (size < size_range[1]) & (~difficult))
         npos_size[size_list[2]] += sum((size > size_range[1]) & (~difficult))
         det_index[imagename] = {}
-        max_score = [-1] * len(R)
-        max_overlap = [-1] * len(R)
+        max_score, max_overlap, temp_max_iou =([-1.] * len(R) for i in range(3))
+        # max_score = [-1.] * len(R)
+        # max_overlap = [-1.] * len(R)
         nms_count = {}
         for thres in ovthresh:
             det_index[imagename][thres] = [False] * len(R)
@@ -159,6 +160,7 @@ def voc_eval(detpath,
                                  'difficult': difficult,
                                  'det': det,
                                  'max_score': max_score,
+                                 'temp_max_iou': temp_max_iou,
                                  'max_overlap': max_overlap,
                                  'nms_count': nms_count,
                                  'size': size,
@@ -196,6 +198,7 @@ def voc_eval(detpath,
         BBGT = R['bbox'].astype(float)
         gt_iou = R['max_overlap']
         gt_score = R['max_score']
+        gt_temp_iou = R['temp_max_iou']
         gt_nms_count = R['nms_count']
         img_size = R['img_size']
 
@@ -220,9 +223,14 @@ def voc_eval(detpath,
             jmax = np.argmax(overlaps)
             obj_size[d] = R['size'][jmax]
             # pdb.set_trace()
-            if sorted_scores[d] > gt_score[jmax]:
+            if ovmax > 0.01:
+                if not R['det'][jmax]:
+                    # gt_score[jmax] = sorted_scores[d]
+                    gt_iou[jmax] = ovmax
+                    R['det'][jmax] = 1
+            if ovmax > gt_temp_iou[jmax]:
+                gt_temp_iou[jmax] = ovmax
                 gt_score[jmax] = sorted_scores[d]
-                gt_iou[jmax] = ovmax
         else:
             obj_size[d] = (bb[2] - bb[0]) * (bb[3] - bb[1]) / (img_size[0] * img_size[1])
 

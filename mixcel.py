@@ -60,6 +60,8 @@ labels = [np.mean(bin[i:i+2]).round(3) for i in range(bin.shape[0]-1)]
 iou_df['size_index']=pd.cut(iou_df['gt_area'],bin, labels=labels)
 iou_df['size_range']=pd.cut(iou_df['gt_area'],bin)
 
+
+
 ax = sns.violinplot(x="size_index", y="2_0.5", data=iou_df);plt.show()
 ax = sns.boxplot(x="size_index", y="2_0.5", data=iou_df)
 ax = sns.swarmplot(x="size_index", y="2_0.5", data=iou_df, color=".25");plt.show()
@@ -114,39 +116,6 @@ print(ap_df)
 
 gt_dist.insert(loc=1,column='ratio',value=gt_dist['count'].div(gt_dist['count'].sum()))
 gt_dist.insert(loc=2,column='cumsum',value=gt_dist['proportion'].cumsum())
-
-CUDA_VISIBLE_DIVICES=2 python test_RFB.py -m /home/chenhao/hao-rfb/weights/weighted-2-0.5-60b/RFB_vgg_VOC_epoches_220.pth
---save_folder eval/weighted_2_0.5_220epo/  >> weighted_2_0.5_250epo.txt &
-CUDA_VISIBLE_DIVICES=2 python test_RFB.py -m /home/chenhao/hao-rfb/weights/2-.5-soft-.3-58b/RFB_vgg_VOC_epoches_250.pth \
---save_folder eval/2-.5-soft-.3-58b/ >> weighted_2-.5-soft-.3-58b.txt & \
-CUDA_VISIBLE_DIVICES=3 python test_RFB.py -m /home/chenhao/hao-rfb/weights/weighted_iou_58b/RFB_vgg_VOC_epoches_250.pth \
---save_folder eval/weighted_5_0.5/ >> weighted_5_0.5_250epo.txt &
-CUDA_VISIBLE_DIVICES=3 python test_RFB.py -m /home/chenhao/hao-rfb/weights/64b/RFB_vgg_VOC_epoches_250.pth \
---save_folder eval/64b/ --retest True
-
-
-
-def my_jaccard(box_a, box_b, alpha=1, beta=1):
-    """Compute the jaccard overlap of two sets of boxes.  The jaccard overlap
-    is simply the intersection over union of two boxes.  Here we operate on
-    ground truth boxes and default boxes.
-    E.g.:
-        A ∩ B / A ∪ B = A ∩ B / (area(A) + area(B) - A ∩ B)
-    Args:
-        box_a: (tensor) Ground truth bounding boxes, Shape: [num_objects,4]
-        box_b: (tensor) Prior boxes from priorbox layers, Shape: [num_priors,4]
-        alpha: (scalar) The weight for missing area
-        beta: (scalar) The weight for extra area
-    Return:
-        jaccard overlap: (tensor) Shape: [box_a.size(0), box_b.size(0)]
-    """
-    inter = intersect(box_a, box_b)
-    area_a = ((box_a[:, 2]-box_a[:, 0]) *
-              (box_a[:, 3]-box_a[:, 1])).unsqueeze(1).expand_as(inter)  # [A,B]
-    area_b = ((box_b[:, 2]-box_b[:, 0]) *
-              (box_b[:, 3]-box_b[:, 1])).unsqueeze(0).expand_as(inter)  # [A,B]
-    union = alpha*area_a + beta*area_b + (1-alpha-beta)*inter
-    return inter / union, inter / area_a  # [A,B]
 
 iou2_df = pd.DataFrame.from_dict({"gt_area":gt_area, "max_iou": iou2_max})
 gt_df = iou2_df
