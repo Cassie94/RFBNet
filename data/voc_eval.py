@@ -197,14 +197,19 @@ def voc_eval(detpath,
 
         # go down dets and mark TPs and FPs
     nd = len(image_ids)
-    tp, fp = ({} for i in range(2))
-    for x in iou_param:
-        param_name = '-'.join([str(xx) for xx in x])
-    for thres in ovthresh:
-        tp[thres] = np.zeros(nd)
-        fp[thres] = np.zeros(nd)
+    tp, fp, obj_size = ({} for i in range(3))
     for param_name in param_name_list:
         obj_size[param_name] = np.zeros(nd)
+        tp[param_name], fp[param_name] = ({} for i in range(2))
+        for thres in ovthresh:
+            tp[param_name][thres] = np.zeros(nd)
+            fp[param_name][thres] = np.zeros(nd)
+    # for thres in ovthresh:
+    #     tp[thres] = np.zeros(nd)
+    #     fp[thres] = np.zeros(nd)
+    #
+    # for param_name in param_name_list:
+    #     obj_size[param_name] = np.zeros(nd)
     for d in range(nd):
         R = class_recs[image_ids[d]]
         det = det_index[image_ids[d]]
