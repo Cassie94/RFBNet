@@ -155,7 +155,7 @@ def voc_eval(detpath,
         for param_name in param_name_list:
             for xx in [max_score, max_overlap, temp_max_iou]:
                 xx[param_name] = [-1.] * len(R)
-            det_index[imagename][iou_param] = {}
+            det_index[imagename][param_name] = {}
             nms_count[param_name] = {}
             det[param_name] = [False] * len(R)
             for thres in ovthresh:
