@@ -150,7 +150,7 @@ def voc_eval(detpath,
         npos_size[size_list[0]] += sum((size <= size_range[0]) & (~difficult))
         npos_size[size_list[1]] += sum((size > size_range[0]) & (size < size_range[1]) & (~difficult))
         npos_size[size_list[2]] += sum((size > size_range[1]) & (~difficult))
-        det_index[imagename], nms_count, det = ( {} for i in range(3)){}
+        det_index[imagename], nms_count, det = ( {} for i in range(3))
         for param_name in param_name_list:
             for xx in [max_score, max_overlap, temp_max_iou]:
                 xx[param_name] = [-1.] * len(R)
