@@ -282,7 +282,7 @@ def voc_eval(detpath,
             if len(v['max_score'][param_name]) > 0:
                 for x,xx in zip([score_res[param_name], iou_res[param_name], size_res[param_name]], \
                     ['max_score', 'max_overlap', 'size']):
-                    x += list(v[param_name][xx])
+                    x += list(v[xx][param_name])
                 for kk,vv in v['nms_count'][param_name].items():
                     nms_res[kk] += vv
 
