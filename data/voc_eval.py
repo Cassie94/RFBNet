@@ -248,6 +248,7 @@ def voc_eval(detpath,
                        alpha * (BBGT[:, 2] - BBGT[:, 0] + 1.) *
                        (BBGT[:, 3] - BBGT[:, 1] + 1.) + (1 - alpha - beta) * inters)
                 overlaps = inters / uni
+                pdb.set_trace()
                 ovmax = np.max(overlaps)
                 jmax = np.argmax(overlaps)
                 obj_size[param_name][d] = R['size'][jmax]
@@ -317,19 +318,9 @@ def voc_eval(detpath,
                     tp_size[x] / np.maximum(tp_size[x] + fp_size[x], np.finfo(np.float64).eps)
                 ap_thres[param_name][thres][x] = voc_ap(rec_thres[param_name][thres][x], \
                     prec_thres[param_name][thres][x], use_07_metric)
-            # rec_thres[param_name][thres]['size'] = rec_size
-            # prec_thres[param_name][thres]['size'] = prec_size
-            # ap_thres[param_name][thres]['size'] = ap_size
-            # compute precision recall for all the objects
-            # fp_whole = np.cumsum(fp[param_name][thres])
-            # tp_whole = np.cumsum(tp[param_name][thres])
+            # COMPUTE THE REC/PRECISE/AP for objects of all size
             fp_size['all_size'] = np.cumsum(fp[param_name][thres])
             tp_size['all_size'] = np.cumsum(tp[param_name][thres])
-            # rec = tp_whole / float(npos)
-            #     # avoid divide by zero in case the first detection matches a difficult
-            #     # ground truth
-            # prec = tp_whole / np.maximum(tp_whole + fp_whole, np.finfo(np.float64).eps)
-            # ap = voc_ap(rec, prec, use_07_metric)
             rec_thres[param_name][thres]['all_size'] = tp_size['all_size'] / float(npos)
             prec_thres[param_name][thres]['all_size'] = tp_size['all_size'] / \
                 np.maximum(tp_size['all_size'] + fp_size['all_size'], np.finfo(np.float64).eps)
