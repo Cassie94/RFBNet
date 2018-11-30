@@ -303,7 +303,7 @@ class VOCDetection(data.Dataset):
         ap_key = size_list + ['all_size']
         aps, eval_res = ({} for i in range(2))
         for param_name in param_name_list:
-            aps[param_name], eval_res[[param_name]] = ({} for i in range(2))
+            aps[param_name], eval_res[param_name] = ({} for i in range(2))
             for thres in thres_list:
                 aps[param_name][thres], eval_res[param_name][thres]= ({} for i in range(2))
                 for tsize in ap_key:
