@@ -223,7 +223,7 @@ def voc_eval(detpath,
         img_size = R['img_size']
 
         if BBGT.size == 0:
-            for k,v in obj_size.item():
+            for k,v in obj_size.items():
                 v[d] = (bb[2] - bb[0]) * (bb[3] - bb[1]) / (img_size[0] * img_size[1])
             # obj_size[d] = (bb[2] - bb[0]) * (bb[3] - bb[1]) / (img_size[0] * img_size[1])
         else:
