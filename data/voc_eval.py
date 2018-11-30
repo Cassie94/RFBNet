@@ -75,6 +75,7 @@ def voc_eval(detpath,
              classname,
              cachedir,
              ovthresh=[0.5, 0.7],
+             iou_param=[(1,1), (1.25, .8)]
              use_07_metric=False):
     """rec, prec, ap = voc_eval(detpath,
                                 annopath,
@@ -93,6 +94,7 @@ def voc_eval(detpath,
     classname: Category name (duh)
     cachedir: Directory for caching the annotations
     [ovthresh]: Overlap threshold (default = 0.5, 0.7)
+    iou_param; the parameter for weight_iou
     [use_07_metric]: Whether to use VOC07's 11 point AP computation
         (default False)
     """
@@ -112,8 +114,9 @@ def voc_eval(detpath,
     size_range = [.02, .2]
     size_list = ['small', 'medium', 'large']
     assert len(size_range) + 1 == len(size_list)
+    ap_key = size_list + ['all_size']
     obj_size_index = list(range(len(size_list)))
-    iou_param = [(1.5,.65), (1.25, .8), (1, 1)]
+    # iou_param = [(1.5,.65), (1.25, .8), (1, 1)]
     param_name_list = ['-'.join([str(xx) for xx in x]) for x in iou_param]
 
     if not os.path.isfile(cachefile):
@@ -306,21 +309,30 @@ def voc_eval(detpath,
             for x,xx in zip(size_list, obj_size_index):
                 fp_size[x] = np.cumsum(fp[param_name][thres][size_index==xx])
                 tp_size[x] = np.cumsum(tp[param_name][thres][size_index==xx])
-                rec_size[x] = tp_size[x] / float(npos_size[x])
-                prec_size[x] = tp_size[x] / np.maximum(tp_size[x] + fp_size[x], np.finfo(np.float64).eps)
-                ap_size[x] = voc_ap(rec_size[x], prec_size[x], use_07_metric)
-            rec_thres[param_name][thres]['size'] = rec_size
-            prec_thres[param_name][thres]['size'] = prec_size
-            ap_thres[param_name][thres]['size'] = ap_size
+                # rec_size[x] = tp_size[x] / float(npos_size[x])
+                # prec_size[x] = tp_size[x] / np.maximum(tp_size[x] + fp_size[x], np.finfo(np.float64).eps)
+                # ap_size[x] = voc_ap(rec_size[x], prec_size[x], use_07_metric)
+                rec_thres[param_name][thres][x] = tp_size[x] / float(npos_size[x])
+                prec_thres[param_name][thres][x] = \
+                    tp_size[x] / np.maximum(tp_size[x] + fp_size[x], np.finfo(np.float64).eps)
+                ap_thres[param_name][thres][x] = voc_ap(rec_thres[param_name][thres][x], \
+                    prec_thres[param_name][thres][x], use_07_metric)
+            # rec_thres[param_name][thres]['size'] = rec_size
+            # prec_thres[param_name][thres]['size'] = prec_size
+            # ap_thres[param_name][thres]['size'] = ap_size
             # compute precision recall for all the objects
-            fp_whole = np.cumsum(fp[param_name][thres])
-            tp_whole = np.cumsum(tp[param_name][thres])
-            rec = tp_whole / float(npos)
-                # avoid divide by zero in case the first detection matches a difficult
-                # ground truth
-            prec = tp_whole / np.maximum(tp_whole + fp_whole, np.finfo(np.float64).eps)
-            ap = voc_ap(rec, prec, use_07_metric)
-            rec_thres[param_name][thres]['whole'] = rec
-            prec_thres[param_name][thres]['whole'] = prec
-            ap_thres[param_name][thres]['whole'] = ap
+            # fp_whole = np.cumsum(fp[param_name][thres])
+            # tp_whole = np.cumsum(tp[param_name][thres])
+            fp_size['all_size'] = np.cumsum(fp[param_name][thres])
+            tp_size['all_size'] = np.cumsum(tp[param_name][thres])
+            # rec = tp_whole / float(npos)
+            #     # avoid divide by zero in case the first detection matches a difficult
+            #     # ground truth
+            # prec = tp_whole / np.maximum(tp_whole + fp_whole, np.finfo(np.float64).eps)
+            # ap = voc_ap(rec, prec, use_07_metric)
+            rec_thres[param_name][thres]['all_size'] = tp_size['all_size'] / float(npos)
+            prec_thres[param_name][thres]['all_size'] = tp_size['all_size'] / \
+                np.maximum(tp_size['all_size'] + fp_size['all_size'], np.finfo(np.float64).eps)
+            ap_thres[param_name][thres]['all_size'] = voc_ap(rec_thres[param_name][thres]['all_size'], \
+                prec_thres[param_name][thres]['all_size'], use_07_metric)
     return rec_thres, prec_thres, ap_thres, size_res, score_res, iou_res,nms_res
