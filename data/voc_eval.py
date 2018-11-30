@@ -109,7 +109,9 @@ def voc_eval(detpath,
     with open(imagesetfile, 'r') as f:
         lines = f.readlines()
     imagenames = [x.strip() for x in lines]
-    size_range = [.02, .4]
+    size_range = [.02, .2]
+    iou_param = [(1.5,.65), (1.25, .8), (1, 1)]
+    param_name_list = ['-'.join([str(xx) for xx in x]) for x in iou_param]
 
     if not os.path.isfile(cachefile):
         # load annots
@@ -143,19 +145,26 @@ def voc_eval(detpath,
         difficult = np.array([x['difficult'] for x in R]).astype(np.bool)
         size = np.array([x['size'] for x in R])
         img_size = recs[imagename][0]['img_size']
-        det = [False] * len(R)
+        # det = [False] * len(R)
         npos = npos + sum(~difficult)
         npos_size[size_list[0]] += sum((size <= size_range[0]) & (~difficult))
         npos_size[size_list[1]] += sum((size > size_range[0]) & (size < size_range[1]) & (~difficult))
         npos_size[size_list[2]] += sum((size > size_range[1]) & (~difficult))
-        det_index[imagename] = {}
-        max_score, max_overlap, temp_max_iou =([-1.] * len(R) for i in range(3))
-        # max_score = [-1.] * len(R)
-        # max_overlap = [-1.] * len(R)
-        nms_count = {}
-        for thres in ovthresh:
-            det_index[imagename][thres] = [False] * len(R)
-            nms_count[thres] = [0] * len(R)
+        det_index[imagename], nms_count, det = ( {} for i in range(3)){}
+        for param_name in param_name_list:
+            for xx in [max_score, max_overlap, temp_max_iou]:
+                xx[param_name] = [-1.] * len(R)
+            det_index[imagename][iou_param] = {}
+            nms_count[param_name] = {}
+            det[param_name] = [False] * len(R)
+            for thres in ovthresh:
+                det_index[imagename][param_name][thres] = [False] * len(R)
+                nms_count[param_name][thres] = [0] * len(R)
+        # max_score, max_overlap, temp_max_iou =([-1.] * len(R) for i in range(3))
+        # nms_count = {}
+        # for thres in ovthresh:
+        #     det_index[imagename][thres] = [False] * len(R)
+        #     nms_count[thres] = [0] * len(R)
         class_recs[imagename] = {'bbox': bbox,
                                  'difficult': difficult,
                                  'det': det,
@@ -186,6 +195,8 @@ def voc_eval(detpath,
         # go down dets and mark TPs and FPs
     nd = len(image_ids)
     tp, fp = ({} for i in range(2))
+    for x in iou_param:
+        param_name = '-'.join([str(xx) for xx in x])
     for thres in ovthresh:
         tp[thres] = np.zeros(nd)
         fp[thres] = np.zeros(nd)
@@ -202,7 +213,9 @@ def voc_eval(detpath,
         gt_nms_count = R['nms_count']
         img_size = R['img_size']
 
-        if BBGT.size > 0:
+        if BBGT.size = 0:
+            obj_size[d] = (bb[2] - bb[0]) * (bb[3] - bb[1]) / (img_size[0] * img_size[1])
+        else:
             # compute overlaps
             # intersection
             ixmin = np.maximum(BBGT[:, 0], bb[0])
@@ -212,77 +225,87 @@ def voc_eval(detpath,
             iw = np.maximum(ixmax - ixmin + 1., 0.)
             ih = np.maximum(iymax - iymin + 1., 0.)
             inters = iw * ih
-
-                # union
-            uni = ((bb[2] - bb[0] + 1.) * (bb[3] - bb[1] + 1.) +
-                   (BBGT[:, 2] - BBGT[:, 0] + 1.) *
-                   (BBGT[:, 3] - BBGT[:, 1] + 1.) - inters)
-
-            overlaps = inters / uni
-            ovmax = np.max(overlaps)
-            jmax = np.argmax(overlaps)
             obj_size[d] = R['size'][jmax]
-            # pdb.set_trace()
-            if ovmax > 0.01:
-                if not R['det'][jmax]:
-                    # gt_score[jmax] = sorted_scores[d]
-                    gt_iou[jmax] = ovmax
-                    R['det'][jmax] = 1
-            if ovmax > gt_temp_iou[jmax]:
-                gt_temp_iou[jmax] = ovmax
-                gt_score[jmax] = sorted_scores[d]
-        else:
-            obj_size[d] = (bb[2] - bb[0]) * (bb[3] - bb[1]) / (img_size[0] * img_size[1])
 
-        for thres in ovthresh:
-            if ovmax > thres:
-                if not R['difficult'][jmax]:
-                    if not det[thres][jmax]:
-                        tp[thres][d] = 1.
-                        det[thres][jmax] = 1
+                # union for different iou_param
+            for (alpha, beta), param_name in zip(iou_param, param_name_list):
+                param_name = '-'.join([str(alpha), str(beta)])
+                uni = (beta * (bb[2] - bb[0] + 1.) * (bb[3] - bb[1] + 1.) +
+                       alpha * (BBGT[:, 2] - BBGT[:, 0] + 1.) *
+                       (BBGT[:, 3] - BBGT[:, 1] + 1.) + (1 - alpha - beta) * inters)
+                overlaps = inters / uni
+                ovmax = np.max(overlaps)
+                jmax = np.argmax(overlaps)
+                # Statistic the max_score or max_iou for each gt box
+                if ovmax > 0.01:
+                    if not R['det'][param_name][jmax]:
+                        gt_iou[param_name][jmax] = ovmax
+                        R['det'][param_name][jmax] = 1
+                if ovmax > gt_temp_iou[param_name][jmax]:
+                    gt_temp_iou[param_name][jmax] = ovmax
+                    gt_score[param_name][jmax] = sorted_scores[d]
+
+                for thres in ovthresh:
+                    if ovmax > thres:
+                        if not R['difficult'][jmax]:
+                            if not det[param_name][thres][jmax]:
+                                tp[param_name][thres][d] = 1.
+                                det[param_name][thres][jmax] = 1
+                            else:
+                                fp[param_name][thres][d] = 1.
+                                gt_nms_count[param_name][thres][jmax] += 1
                     else:
-                        fp[thres][d] = 1.
-                        gt_nms_count[thres][jmax] += 1
-            else:
-                fp[thres][d] = 1.
+                        fp[param_name][thres][d] = 1.
 
-    size_res, score_res, iou_res = ([] for i in range(3))
-    nms_list = {}
-    for thres in ovthresh:
-        nms_list[thres] = []
-    for k,v in class_recs.items():
-        if len(v['max_score']) > 0:
-            for x,xx in zip([score_res, iou_res, size_res], ['max_score', 'max_overlap', 'size']):
-                x += list(v[xx])
-            for kk,vv in v['nms_count'].items():
-                nms_list[kk] += vv
+    # Analysis the max_score, max_iou, size for each gt_box
+    size_res, score_res, iou_res, nms_res = ({} for i in range(4))
+    for param_name in param_name_list:
+        for x in [size_res, score_res, iou_res]:
+            x[param_name] = []
+        nms_res[param_name] = {}
+        for thres in ovthresh:
+            nms_res[param_name][thres] = []
 
+        for k,v in class_recs.items():
+            if len(v['max_score']) > 0:
+                for x,xx in zip([score_res[param_name], iou_res[param_name], size_res[param_name]], \
+                    ['max_score', 'max_overlap', 'size']):
+                    x += list(v[param_name][xx])
+                for kk,vv in v[param_name]['nms_count'].items():
+                    nms_res[kk] += vv
+
+    # CALCULATE THE AP, RECALL, PRECISE FOR DIFFERENT SIZE OBJECTS.
+    obj_size_index = list(range(len(size_list)))
     size_index = np.piecewise(obj_size, [obj_size<=size_range[0], \
-        (obj_size>size_range[0])*(obj_size<=size_range[1]), obj_size>size_range[1]], [1,2,3])
+        (obj_size>size_range[0])*(obj_size<=size_range[1]), obj_size>size_range[1]], obj_size_index)
     # calculate rec,prec,ap for small/medium/large objects
     rec_thres, prec_thres, ap_thres = ({} for i in range(3))
-    for thres in ovthresh:
-        rec_thres[thres], prec_thres[thres], ap_thres[thres] =({} for i in range(3))
-        fp_size, tp_size, rec_size, prec_size, ap_size = ({} for i in range(5))
-        for x,xx in zip(size_list, [1,2,3]):
-            fp_size[x] = np.cumsum(fp[thres][size_index==xx])
-            tp_size[x] = np.cumsum(tp[thres][size_index==xx])
-            # pdb.set_trace()
-            rec_size[x] = tp_size[x] / float(npos_size[x])
-            prec_size[x] = tp_size[x] / np.maximum(tp_size[x] + fp_size[x], np.finfo(np.float64).eps)
-            ap_size[x] = voc_ap(rec_size[x], prec_size[x], use_07_metric)
-        rec_thres[thres]['size'] = rec_size
-        prec_thres[thres]['size'] = prec_size
-        ap_thres[thres]['size'] = ap_size
-        # compute precision recall
-        fp_whole = np.cumsum(fp[thres])
-        tp_whole = np.cumsum(tp[thres])
-        rec = tp_whole / float(npos)
-            # avoid divide by zero in case the first detection matches a difficult
-            # ground truth
-        prec = tp_whole / np.maximum(tp_whole + fp_whole, np.finfo(np.float64).eps)
-        ap = voc_ap(rec, prec, use_07_metric)
-        rec_thres[thres]['whole'] = rec
-        prec_thres[thres]['whole'] = prec
-        ap_thres[thres]['whole'] = ap
-    return rec_thres, prec_thres, ap_thres, size_res, score_res, iou_res,nms_list
+    for param_name in param_name_list:
+        for x in [rec_thres, prec_thres, ap_thres]:
+            x[param_name] = {}
+        for thres in ovthresh:
+            for x in [rec_thres, prec_thres, ap_thres]:
+                x[param_name][thres] = {}
+            # rec_thres[param_name][thres], prec_thres[thres], ap_thres[thres] =({} for i in range(3))
+            fp_size, tp_size, rec_size, prec_size, ap_size = ({} for i in range(5))
+            for x,xx in zip(size_list, obj_size_index):
+                fp_size[x] = np.cumsum(fp[param_name][thres][size_index==xx])
+                tp_size[x] = np.cumsum(tp[param_name][thres][size_index==xx])
+                rec_size[x] = tp_size[x] / float(npos_size[x])
+                prec_size[x] = tp_size[x] / np.maximum(tp_size[x] + fp_size[x], np.finfo(np.float64).eps)
+                ap_size[x] = voc_ap(rec_size[x], prec_size[x], use_07_metric)
+            rec_thres[param_name][thres]['size'] = rec_size
+            prec_thres[param_name][thres]['size'] = prec_size
+            ap_thres[param_name][thres]['size'] = ap_size
+            # compute precision recall for all the objects
+            fp_whole = np.cumsum(fp[param_name][thres])
+            tp_whole = np.cumsum(tp[param_name][thres])
+            rec = tp_whole / float(npos)
+                # avoid divide by zero in case the first detection matches a difficult
+                # ground truth
+            prec = tp_whole / np.maximum(tp_whole + fp_whole, np.finfo(np.float64).eps)
+            ap = voc_ap(rec, prec, use_07_metric)
+            rec_thres[param_name][thres]['whole'] = rec
+            prec_thres[param_name][thres]['whole'] = prec
+            ap_thres[param_name][thres]['whole'] = ap
+    return rec_thres, prec_thres, ap_thres, size_res, score_res, iou_res,nms_res
