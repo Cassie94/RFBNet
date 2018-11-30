@@ -110,6 +110,9 @@ def voc_eval(detpath,
         lines = f.readlines()
     imagenames = [x.strip() for x in lines]
     size_range = [.02, .2]
+    size_list = ['small', 'medium', 'large']
+    assert len(size_range) + 1 == len(size_list)
+    obj_size_index = list(range(len(size_list)))
     iou_param = [(1.5,.65), (1.25, .8), (1, 1)]
     param_name_list = ['-'.join([str(xx) for xx in x]) for x in iou_param]
 
@@ -134,7 +137,6 @@ def voc_eval(detpath,
     class_recs = {}
     npos = 0
     npos_size = {}
-    size_list = ['small', 'medium', 'large']
     det_index = {}
 
     for x in size_list:
@@ -201,7 +203,8 @@ def voc_eval(detpath,
     for thres in ovthresh:
         tp[thres] = np.zeros(nd)
         fp[thres] = np.zeros(nd)
-    obj_size = np.zeros(nd)
+    for param_name in param_name_list:
+        obj_size[param_name] = np.zeros(nd)
     for d in range(nd):
         R = class_recs[image_ids[d]]
         det = det_index[image_ids[d]]
@@ -215,7 +218,9 @@ def voc_eval(detpath,
         img_size = R['img_size']
 
         if BBGT.size == 0:
-            obj_size[d] = (bb[2] - bb[0]) * (bb[3] - bb[1]) / (img_size[0] * img_size[1])
+            for k,v in obj_size.item():
+                v[d] = (bb[2] - bb[0]) * (bb[3] - bb[1]) / (img_size[0] * img_size[1])
+            # obj_size[d] = (bb[2] - bb[0]) * (bb[3] - bb[1]) / (img_size[0] * img_size[1])
         else:
             # compute overlaps
             # intersection
@@ -226,7 +231,7 @@ def voc_eval(detpath,
             iw = np.maximum(ixmax - ixmin + 1., 0.)
             ih = np.maximum(iymax - iymin + 1., 0.)
             inters = iw * ih
-            obj_size[d] = R['size'][jmax]
+            # obj_size[d] = R['size'][jmax]
 
                 # union for different iou_param
             for (alpha, beta), param_name in zip(iou_param, param_name_list):
@@ -237,6 +242,7 @@ def voc_eval(detpath,
                 overlaps = inters / uni
                 ovmax = np.max(overlaps)
                 jmax = np.argmax(overlaps)
+                obj_size[param_name][d] = R['size'][jmax]
                 # Statistic the max_score or max_iou for each gt box
                 if ovmax > 0.01:
                     if not R['det'][param_name][jmax]:
@@ -276,12 +282,13 @@ def voc_eval(detpath,
                     nms_res[kk] += vv
 
     # CALCULATE THE AP, RECALL, PRECISE FOR DIFFERENT SIZE OBJECTS.
-    obj_size_index = list(range(len(size_list)))
-    size_index = np.piecewise(obj_size, [obj_size<=size_range[0], \
-        (obj_size>size_range[0])*(obj_size<=size_range[1]), obj_size>size_range[1]], obj_size_index)
     # calculate rec,prec,ap for small/medium/large objects
     rec_thres, prec_thres, ap_thres = ({} for i in range(3))
     for param_name in param_name_list:
+        obj_param_size = obj_size[param_name]
+        size_index = np.piecewise(obj_param_size, [obj_param_size<=size_range[0], \
+            (obj_param_size>size_range[0])*(obj_param_size<=size_range[1]), \
+            obj_param_size>size_range[1]], obj_size_index)
         for x in [rec_thres, prec_thres, ap_thres]:
             x[param_name] = {}
         for thres in ovthresh:
