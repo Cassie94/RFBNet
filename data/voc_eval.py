@@ -213,7 +213,7 @@ def voc_eval(detpath,
         gt_nms_count = R['nms_count']
         img_size = R['img_size']
 
-        if BBGT.size = 0:
+        if BBGT.size == 0:
             obj_size[d] = (bb[2] - bb[0]) * (bb[3] - bb[1]) / (img_size[0] * img_size[1])
         else:
             # compute overlaps
