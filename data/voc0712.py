@@ -332,7 +332,7 @@ class VOCDetection(data.Dataset):
             for param_name,v in ap_thres.items():
                 for thres, vv in v.items():
                     for tsize, vvv in vv.items():
-                        print('AP@{} for {} object of {}= {:.4f}'.format(str(thres), tsize, cls, vvv]))
+                        print('AP@{} for {} object of {}= {:.4f}'.format(str(thres), tsize, cls, vvv))
                         aps[param_name][thres][tsize].append(vvv)
             if output_dir is not None:
                 with open(os.path.join(output_dir, cls + '_pr.pkl'), 'wb') as f:
