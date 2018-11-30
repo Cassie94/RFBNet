@@ -332,7 +332,8 @@ class VOCDetection(data.Dataset):
             for param_name,v in ap_thres.items():
                 for thres, vv in v.items():
                     for tsize, vvv in vv.items():
-                        print('AP@{} for {} object of {}= {:.4f}'.format(str(thres), tsize, cls, vvv))
+                        print('AP@{} at iou_param({}) for {} {} object = {:.4f}'.format( \
+                            str(thres), param_name, cls, tsize, vvv))
                         aps[param_name][thres][tsize].append(vvv)
             if output_dir is not None:
                 with open(os.path.join(output_dir, cls + '_pr.pkl'), 'wb') as f:
@@ -340,8 +341,8 @@ class VOCDetection(data.Dataset):
         for param_name,v in aps.items():
             for thres, vv in v.items():
                 for tsize, vvv in vv.items():
-                    print('Mean AP@{} for {} objects at iou_param: {}= {:.4f}'.format( \
-                        str(thres), tsize, param_name, np.mean(vvv).round(4)))
+                    print('Mean AP@{} at iou_param({}) for {} = {:.4f}'.format( \
+                        str(thres), param_name, tsize, np.mean(vvv).round(4)))
                     eval_res[param_name][thres][tsize] = np.mean(vvv).round(4)
         # for param_name in param_name_list:
         #     for thres in thres_list:
