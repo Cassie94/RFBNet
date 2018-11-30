@@ -283,9 +283,9 @@ def voc_eval(detpath,
                 size_res[param_name] += list(v['size'])
                 for x,xx in zip([score_res[param_name], iou_res[param_name]], \
                     ['max_score', 'max_overlap']):
-                    # pdb.set_trace()
                     x += list(v[xx][param_name])
                 for kk,vv in v['nms_count'][param_name].items():
+                    pdb.set_trace()
                     nms_res[kk] += vv
 
     # CALCULATE THE AP, RECALL, PRECISE FOR DIFFERENT SIZE OBJECTS.
