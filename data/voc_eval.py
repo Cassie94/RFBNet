@@ -279,11 +279,11 @@ def voc_eval(detpath,
             nms_res[param_name][thres] = []
 
         for k,v in class_recs.items():
-            if len(v['max_score']) > 0:
+            if len(v['max_score'][param_name]) > 0:
                 for x,xx in zip([score_res[param_name], iou_res[param_name], size_res[param_name]], \
                     ['max_score', 'max_overlap', 'size']):
                     x += list(v[param_name][xx])
-                for kk,vv in v[param_name]['nms_count'].items():
+                for kk,vv in v['nms_count'][param_name].items():
                     nms_res[kk] += vv
 
     # CALCULATE THE AP, RECALL, PRECISE FOR DIFFERENT SIZE OBJECTS.
