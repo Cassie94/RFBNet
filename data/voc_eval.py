@@ -280,9 +280,10 @@ def voc_eval(detpath,
 
         for k,v in class_recs.items():
             if len(v['max_score'][param_name]) > 0:
-                for x,xx in zip([score_res[param_name], iou_res[param_name], size_res[param_name]], \
-                    ['max_score', 'max_overlap', 'size']):
-                    pdb.set_trace()
+                size_res[param_name] += list(v['size'])
+                for x,xx in zip([score_res[param_name], iou_res[param_name]], \
+                    ['max_score', 'max_overlap']):
+                    # pdb.set_trace()
                     x += list(v[xx][param_name])
                 for kk,vv in v['nms_count'][param_name].items():
                     nms_res[kk] += vv
