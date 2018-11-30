@@ -75,7 +75,7 @@ def voc_eval(detpath,
              classname,
              cachedir,
              ovthresh=[0.5, 0.7],
-             iou_param=[(1,1), (1.25, .8)]
+             iou_param=[(1,1), (1.25, .8)],
              use_07_metric=False):
     """rec, prec, ap = voc_eval(detpath,
                                 annopath,
