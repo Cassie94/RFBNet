@@ -118,12 +118,13 @@ class MultiBoxLoss(nn.Module):
         conf_p = conf_data[(pos_idx+neg_idx).gt(0)].view(-1,self.num_classes)
         targets_weighted = conf_t[(pos+neg).gt(0)]
         if self.soft_label:
-            bce_target = torch.eye(self.num_classes)[targets_weighted]
-            if GPU:
-                bce_target = bce_target.cuda()
+            # bce_target = torch.eye(self.num_classes)[targets_weighted]
+            # if GPU:
+            #     bce_target = bce_target.cuda()
             # USE THE FULL GRADIENT OF NEGTIVE SAMPLES AND WEIGHTED GRADIENTS OF POSITIVE SAMPLES.
             ious[neg] = 1
-            target_ious = ious[(pos+neg).gt(0)].unsqueeze(1).expand_as(bce_target)
+            target_ious = ious[(pos+neg).gt(0)].unsqueeze(1) #.expand_as(bce_target)
+            pdb.set_trace()
             loss_c = F.binary_cross_entropy_with_logits(conf_p, bce_target, \
                 target_ious, size_average=False)
         else:
