@@ -30,7 +30,7 @@ parser.add_argument('-d', '--dataset', default='VOC',
                     help='VOC or COCO dataset')
 parser.add_argument(
     '--basenet', default='./weights/vgg16_reducedfc.pth', help='pretrained base model')
-parser.add_argument('--size_range', default='0.02,0.4',
+parser.add_argument('--size_range', default='0.02,0.2',
                     type=str, help='The size range for small/medium/large')
 parser.add_argument('--iou_threshold', default='0.5,0.5,0.5',
                     type=str, help='Min Jaccard index for matching')

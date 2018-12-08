@@ -122,7 +122,7 @@ class MultiBoxLoss(nn.Module):
             # USE THE FULL GRADIENT OF NEGTIVE SAMPLES AND WEIGHTED GRADIENTS OF POSITIVE SAMPLES.
             pos_ious = ious[pos]
             loss_l = F.smooth_l1_loss(loc_p, loc_t, reduction='none')
-            loss_l = torch.sum(loss_l * pos_ious)
+            loss_l = torch.sum(loss_l * pos_ious[:,None])
             ious[neg] = 1
             target_ious = ious[pos+neg]
             loss_c = F.cross_entropy(conf_p, targets_weighted, reduction='none')
