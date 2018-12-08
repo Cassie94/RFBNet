@@ -280,7 +280,7 @@ def train():
         loc_loss += loss_l.item()
         conf_loss += loss_c.item()
         load_t1 = time.time()
-        if iteration % 50 == 0:
+        if iteration % 10 == 0:
             print('Epoch:' + repr(epoch) + ' || epochiter: ' + repr(iteration % epoch_size) + '/' + repr(epoch_size)
                   + '|| Totel iter ' +
                   repr(iteration) + ' || L: %.4f C: %.4f||' % (
