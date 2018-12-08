@@ -96,14 +96,12 @@ class MultiBoxLoss(nn.Module):
         pos_idx = pos.unsqueeze(pos.dim()).expand_as(loc_data)
         loc_p = loc_data[pos_idx].view(-1,4)
         loc_t = loc_t[pos_idx].view(-1,4)
-        loss_l = F.smooth_l1_loss(loc_p, loc_t, size_average=False)
 
         # Compute max conf across batch for hard negative mining
         batch_conf = conf_data.view(-1,self.num_classes)
         loss_c = log_sum_exp(batch_conf) - batch_conf.gather(1, conf_t.view(-1,1))
 
         # Hard Negative Mining
-        # pdb.set_trace()
         loss_c[pos.view(-1,1)] = 0 # filter out pos boxes for now
         loss_c = loss_c.view(num, -1)
         _,loss_idx = loss_c.sort(1, descending=True)
@@ -122,16 +120,20 @@ class MultiBoxLoss(nn.Module):
             # if GPU:
             #     bce_target = bce_target.cuda()
             # USE THE FULL GRADIENT OF NEGTIVE SAMPLES AND WEIGHTED GRADIENTS OF POSITIVE SAMPLES.
+            pos_ious = ious[pos]
+            loss_l = F.smooth_l1_loss(loc_p, loc_t, reduction='none')
+            loss_l = torch.sum(loss_l * pos_ious)
             ious[neg] = 1
-            target_ious = ious[(pos+neg).gt(0)].unsqueeze(1) #.expand_as(bce_target)
-            pdb.set_trace()
-            loss_c = F.binary_cross_entropy_with_logits(conf_p, bce_target, \
-                target_ious, size_average=False)
+            target_ious = ious[pos+neg]
+            loss_c = F.cross_entropy(conf_p, targets_weighted, reduction='none')
+            loss_c = torch.sum(loss_c * target_ious)
+            # loss_c = F.binary_cross_entropy_with_logits(conf_p, bce_target, \
+            #     target_ious, size_average=False)
         else:
-            loss_c = F.cross_entropy(conf_p, targets_weighted, size_average=False)
+            loss_l = F.smooth_l1_loss(loc_p, loc_t, reduction='sum')
+            loss_c = F.cross_entropy(conf_p, targets_weighted, reduction='sum')
 
         # Sum of losses: L(x,c,l,g) = (Lconf(x, c) + αLloc(x,l,g)) / N
-
         N = max(num_pos.data.sum().float(), 1)
         loss_l/=N
         loss_c/=N
