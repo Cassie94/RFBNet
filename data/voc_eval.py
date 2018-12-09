@@ -224,25 +224,20 @@ def voc_eval(detpath,
         gt_nms_count = R['nms_count']
         img_size = R['img_size']
 
-        if BBGT.size == 0:
-            for k,v in obj_size.items():
-                v[d] = (bb[2] - bb[0]) * (bb[3] - bb[1]) / (img_size[0] * img_size[1])
-            # obj_size[d] = (bb[2] - bb[0]) * (bb[3] - bb[1]) / (img_size[0] * img_size[1])
-        else:
-            # compute overlaps
-            # intersection
-            ixmin = np.maximum(BBGT[:, 0], bb[0])
-            iymin = np.maximum(BBGT[:, 1], bb[1])
-            ixmax = np.minimum(BBGT[:, 2], bb[2])
-            iymax = np.minimum(BBGT[:, 3], bb[3])
-            iw = np.maximum(ixmax - ixmin + 1., 0.)
-            ih = np.maximum(iymax - iymin + 1., 0.)
-            inters = iw * ih
-            # obj_size[d] = R['size'][jmax]
+        for (alpha, beta), param_name in zip(iou_param, param_name_list):
+            if BBGT.size == 0:
+                obj_size[param_name][d] = (bb[2] - bb[0]) * (bb[3] - bb[1]) / (img_size[0] * img_size[1])
+            else:
+                # compute overlaps
+                # intersection
+                ixmin = np.maximum(BBGT[:, 0], bb[0])
+                iymin = np.maximum(BBGT[:, 1], bb[1])
+                ixmax = np.minimum(BBGT[:, 2], bb[2])
+                iymax = np.minimum(BBGT[:, 3], bb[3])
+                iw = np.maximum(ixmax - ixmin + 1., 0.)
+                ih = np.maximum(iymax - iymin + 1., 0.)
+                inters = iw * ih
 
-            # union for different iou_param
-            for (alpha, beta), param_name in zip(iou_param, param_name_list):
-                param_name = '-'.join([str(alpha), str(beta)])
                 uni = (beta * (bb[2] - bb[0] + 1.) * (bb[3] - bb[1] + 1.) + \
                        alpha * (BBGT[:, 2] - BBGT[:, 0] + 1.) * \
                        (BBGT[:, 3] - BBGT[:, 1] + 1.) + (1 - alpha - beta) * inters)
@@ -250,7 +245,7 @@ def voc_eval(detpath,
                 ovmax = np.max(overlaps)
                 jmax = np.argmax(overlaps)
                 obj_size[param_name][d] = R['size'][jmax]
-                # Statistic the max_score or max_iou for each gt box
+                # Statistic the max_score or max_iou for  each gt box
                 if ovmax > 0.01:
                     if not R['det'][param_name][jmax]:
                         gt_iou[param_name][jmax] = ovmax
@@ -259,18 +254,17 @@ def voc_eval(detpath,
                     gt_temp_iou[param_name][jmax] = ovmax
                     gt_score[param_name][jmax] = sorted_scores[d]
 
-            for param_name in param_name_list:
-                for thres in ovthresh:
-                    if ovmax > thres:
-                        if not R['difficult'][jmax]:
-                            if not det[param_name][thres][jmax]:
-                                tp[param_name][thres][d] = 1.
-                                det[param_name][thres][jmax] = 1
-                            else:
-                                fp[param_name][thres][d] = 1.
-                                gt_nms_count[param_name][thres][jmax] += 1
-                    else:
-                        fp[param_name][thres][d] = 1.
+            for thres in ovthresh:
+                if ovmax > thres:
+                    if not R['difficult'][jmax]:
+                        if not det[param_name][thres][jmax]:
+                            tp[param_name][thres][d] = 1.
+                            det[param_name][thres][jmax] = 1
+                        else:
+                            fp[param_name][thres][d] = 1.
+                            gt_nms_count[param_name][thres][jmax] += 1
+                else:
+                    fp[param_name][thres][d] = 1.
 
     # Analysis the max_score, max_iou, size for each gt_box
     size_res, score_res, iou_res, nms_res = ({} for i in range(4))
