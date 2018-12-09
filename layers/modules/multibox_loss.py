@@ -96,6 +96,7 @@ class MultiBoxLoss(nn.Module):
         pos_idx = pos.unsqueeze(pos.dim()).expand_as(loc_data)
         loc_p = loc_data[pos_idx].view(-1,4)
         loc_t = loc_t[pos_idx].view(-1,4)
+        loss_l = F.smooth_l1_loss(loc_p, loc_t, reduction='sum')
 
         # Compute max conf across batch for hard negative mining
         batch_conf = conf_data.view(-1,self.num_classes)
@@ -120,9 +121,6 @@ class MultiBoxLoss(nn.Module):
             # if GPU:
             #     bce_target = bce_target.cuda()
             # USE THE FULL GRADIENT OF NEGTIVE SAMPLES AND WEIGHTED GRADIENTS OF POSITIVE SAMPLES.
-            pos_ious = ious[pos]
-            loss_l = F.smooth_l1_loss(loc_p, loc_t, reduction='none')
-            loss_l = torch.sum(loss_l * pos_ious[:,None])
             ious[neg] = 1
             target_ious = ious[pos+neg]
             loss_c = F.cross_entropy(conf_p, targets_weighted, reduction='none')
@@ -130,7 +128,6 @@ class MultiBoxLoss(nn.Module):
             # loss_c = F.binary_cross_entropy_with_logits(conf_p, bce_target, \
             #     target_ious, size_average=False)
         else:
-            loss_l = F.smooth_l1_loss(loc_p, loc_t, reduction='sum')
             loss_c = F.cross_entropy(conf_p, targets_weighted, reduction='sum')
 
         # Sum of losses: L(x,c,l,g) = (Lconf(x, c) + αLloc(x,l,g)) / N
