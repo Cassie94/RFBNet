@@ -243,7 +243,6 @@ def voc_eval(detpath,
             # union for different iou_param
             for (alpha, beta), param_name in zip(iou_param, param_name_list):
                 param_name = '-'.join([str(alpha), str(beta)])
-                pdb.set_trace()
                 uni = (beta * (bb[2] - bb[0] + 1.) * (bb[3] - bb[1] + 1.) + \
                        alpha * (BBGT[:, 2] - BBGT[:, 0] + 1.) * \
                        (BBGT[:, 3] - BBGT[:, 1] + 1.) + (1 - alpha - beta) * inters)
