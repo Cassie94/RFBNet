@@ -241,36 +241,37 @@ def voc_eval(detpath,
             # obj_size[d] = R['size'][jmax]
 
             # union for different iou_param
-        for (alpha, beta), param_name in zip(iou_param, param_name_list):
-            param_name = '-'.join([str(alpha), str(beta)])
-            pdb.set_trace()
-            uni = (beta * (bb[2] - bb[0] + 1.) * (bb[3] - bb[1] + 1.) + \
-                   alpha * (BBGT[:, 2] - BBGT[:, 0] + 1.) * \
-                   (BBGT[:, 3] - BBGT[:, 1] + 1.) + (1 - alpha - beta) * inters)
-            overlaps = inters / uni
-            ovmax = np.max(overlaps)
-            jmax = np.argmax(overlaps)
-            obj_size[param_name][d] = R['size'][jmax]
-            # Statistic the max_score or max_iou for each gt box
-            if ovmax > 0.01:
-                if not R['det'][param_name][jmax]:
-                    gt_iou[param_name][jmax] = ovmax
-                    R['det'][param_name][jmax] = 1
-            if ovmax > gt_temp_iou[param_name][jmax]:
-                gt_temp_iou[param_name][jmax] = ovmax
-                gt_score[param_name][jmax] = sorted_scores[d]
+            for (alpha, beta), param_name in zip(iou_param, param_name_list):
+                param_name = '-'.join([str(alpha), str(beta)])
+                pdb.set_trace()
+                uni = (beta * (bb[2] - bb[0] + 1.) * (bb[3] - bb[1] + 1.) + \
+                       alpha * (BBGT[:, 2] - BBGT[:, 0] + 1.) * \
+                       (BBGT[:, 3] - BBGT[:, 1] + 1.) + (1 - alpha - beta) * inters)
+                overlaps = inters / uni
+                ovmax = np.max(overlaps)
+                jmax = np.argmax(overlaps)
+                obj_size[param_name][d] = R['size'][jmax]
+                # Statistic the max_score or max_iou for each gt box
+                if ovmax > 0.01:
+                    if not R['det'][param_name][jmax]:
+                        gt_iou[param_name][jmax] = ovmax
+                        R['det'][param_name][jmax] = 1
+                if ovmax > gt_temp_iou[param_name][jmax]:
+                    gt_temp_iou[param_name][jmax] = ovmax
+                    gt_score[param_name][jmax] = sorted_scores[d]
 
-            for thres in ovthresh:
-                if ovmax > thres:
-                    if not R['difficult'][jmax]:
-                        if not det[param_name][thres][jmax]:
-                            tp[param_name][thres][d] = 1.
-                            det[param_name][thres][jmax] = 1
-                        else:
-                            fp[param_name][thres][d] = 1.
-                            gt_nms_count[param_name][thres][jmax] += 1
-                else:
-                    fp[param_name][thres][d] = 1.
+            for param_name in param_name_list:
+                for thres in ovthresh:
+                    if ovmax > thres:
+                        if not R['difficult'][jmax]:
+                            if not det[param_name][thres][jmax]:
+                                tp[param_name][thres][d] = 1.
+                                det[param_name][thres][jmax] = 1
+                            else:
+                                fp[param_name][thres][d] = 1.
+                                gt_nms_count[param_name][thres][jmax] += 1
+                    else:
+                        fp[param_name][thres][d] = 1.
 
     # Analysis the max_score, max_iou, size for each gt_box
     size_res, score_res, iou_res, nms_res = ({} for i in range(4))
