@@ -134,7 +134,6 @@ def voc_eval(detpath,
     npos_size = {}
     size_list = ['small', 'medium', 'large']
     det_index = {}
-    pdb.set_trace()
     for x in size_list:
         npos_size[x] = 0
     for imagename in imagenames:
@@ -226,6 +225,7 @@ def voc_eval(detpath,
         (obj_size>size_range[0])*(obj_size<=size_range[1]), obj_size>size_range[1]], [1,2,3])
     # calculate rec,prec,ap for small/medium/large objects
     rec_thres, prec_thres, ap_thres = ({} for i in range(3))
+    pdb.set_trace()
     for thres in ovthresh:
         rec_thres[thres], prec_thres[thres], ap_thres[thres] =({} for i in range(3))
         fp_size, tp_size, rec_size, prec_size, ap_size = ({} for i in range(5))
