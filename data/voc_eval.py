@@ -135,7 +135,6 @@ def voc_eval(detpath,
         # load
         with open(cachefile, 'rb') as f:
             recs = pickle.load(f)
-    # pdb.set_trace()
     # extract gt objects for this class
     class_recs = {}
     npos = 0
@@ -248,7 +247,6 @@ def voc_eval(detpath,
                        alpha * (BBGT[:, 2] - BBGT[:, 0] + 1.) *
                        (BBGT[:, 3] - BBGT[:, 1] + 1.) + (1 - alpha - beta) * inters)
                 overlaps = inters / uni
-                pdb.set_trace()
                 ovmax = np.max(overlaps)
                 jmax = np.argmax(overlaps)
                 obj_size[param_name][d] = R['size'][jmax]
@@ -289,7 +287,6 @@ def voc_eval(detpath,
                     ['max_score', 'max_overlap']):
                     x += list(v[xx][param_name])
                 for kk,vv in v['nms_count'][param_name].items():
-                    # pdb.set_trace()
                     nms_res[param_name][kk] += vv
 
     # CALCULATE THE AP, RECALL, PRECISE FOR DIFFERENT SIZE OBJECTS.
