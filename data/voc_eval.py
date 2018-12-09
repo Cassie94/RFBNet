@@ -326,4 +326,5 @@ def voc_eval(detpath,
                 np.maximum(tp_size['all_size'] + fp_size['all_size'], np.finfo(np.float64).eps)
             ap_thres[param_name][thres]['all_size'] = voc_ap(rec_thres[param_name][thres]['all_size'], \
                 prec_thres[param_name][thres]['all_size'], use_07_metric)
+            pdb.set_trace()
     return rec_thres, prec_thres, ap_thres, size_res, score_res, iou_res,nms_res
