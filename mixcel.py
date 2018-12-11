@@ -39,28 +39,27 @@ from utils.box_utils import jaccard
 # iou2_2_max = torch.max(jaccard(gt.double(), priors.double(),), 1)[0]
 
 iou_static = {}
-for alpha in [1,2,5]:
-    iou_static[alpha]={}
-    for beta in [.2,.5, 1]:
-        max_iou, max_ratio =
-        iou_static[alpha][beta] = torch.max(jaccard(gt.double(),
-            priors.double(), alpha, beta), 1)[0]
+iou_param = [(1,1), (1.25,.8), (1.5,.65), (2,.5),(4,.25)]
+param_name_list = []
+for alpha,beta in iou_param:
+    param_name_list.append("{}_{}".format(alpha, beta))
+    iou_static[iou_param] = torch.max(jaccard(gt.double(),
+        priors.double(), alpha, beta)[0], dim=1)[0]
 
-
-
-# gt_area = (gt[:,2] - gt[:,0]) * (gt[:,3] - gt[:,1])
-iou_static_dict = {"gt_area": (gt[:,2] - gt[:,0]) * (gt[:,3] - gt[:,1])}
-for k1,v1 in iou_static.items():
-    for k2,v2 in v1.items():
-        iou_static_dict['{}_{}'.format(k1,k2)] = v2
-iou_df = pd.DataFrame.from_dict(iou_static_dict)
+iou_static['gt_area'] = (gt[:,2] - gt[:,0]) * (gt[:,3] - gt[:,1])
+iou_df = pd.DataFrame.from_dict(iou_static)
 
 bin = np.concatenate((np.arange(0,0.1-1e-5,0.01),np.arange(0.1,0.5-1e-5,0.05),np.arange(0.5,1+1e-5,0.1)))
-labels = [np.mean(bin[i:i+2]).round(3) for i in range(bin.shape[0]-1)]
-iou_df['size_index']=pd.cut(iou_df['gt_area'],bin, labels=labels)
+# labels = [np.mean(bin[i:i+2]).round(3) for i in range(bin.shape[0]-1)]
+# iou_df['size_index']=pd.cut(iou_df['gt_area'],bin, labels=labels)
 iou_df['size_range']=pd.cut(iou_df['gt_area'],bin)
-
-
+iou_des_dict = {}
+for ii in iou_df.columns[:5]:
+    iou_des_dict[ii] = iou_df.groupby('size_range')[ii].describe()
+    iou_des_dict[ii].insert(loc=0, column='ratio',
+        value=iou_des_dict[ii]['count'].div(iou_des_dict[ii]['count'].sum()))
+    iou_des_dict[ii].insert(loc=0, column='cumsum',
+        value=iou_des_dict[ii]['ratio'].cumsum())
 
 ax = sns.violinplot(x="size_index", y="2_0.5", data=iou_df);plt.show()
 ax = sns.boxplot(x="size_index", y="2_0.5", data=iou_df)
@@ -72,31 +71,21 @@ import numpy as np
 import sys,os
 
 # subplot
-f, axes = plt.subplots(3, 3, figsize=(9,9), sharex=True)
+df_50 = pd.DataFrame()
+df_50['ratio']=iou_des['1_1']['ratio']
+df_50['cumsum']=iou_des['1_1']['cumsum']
+ratio_list = ['50%']
+for kk in ratio_list:
+    for k in param_name_list:
+        df_50[k+'_'+kk] = iou_des[k][kk]
+df_50.round(3)
+fig_num = 2
+f, axes = plt.subplots(fig_num, fig_num, figsize=(9,9), sharex=True)
 sns.despine(left=True)
 for i in range(1,10):
-    sns.boxplot(x="size_index", y=iou_df.columns[i], data=iou_df, ax=axes[(i-1)//3,(i-1)%3])
+    sns.boxplot(x="size_index", y=iou_df.columns[i], data=iou_df,  \
+        ax=axes[(i-1)//fig_num,(i-1)%fig_num])
 plt.show()
-
-iou_des_dict = {}
-
-for ii in iou_df.columns[1:10]:
-    iou_des_dict[ii] = iou_df.groupby('size_range')[ii].describe()
-    iou_des_dict[ii].insert(loc=0, column='ratio',
-        value=iou_des_dict[ii]['count'].div(iou_des_dict[ii]['count'].sum()))
-    iou_des_dict[ii].insert(loc=0, column='cumsum',
-        value=iou_des_dict[ii]['ratio'].cumsum())
-
-df_50 = pd.DataFrame()
-df_50['ratio']=iou_des_dict['1_1']['ratio']
-df_50['cumsum']=iou_des_dict['1_1']['cumsum']
-# key_list = ['1_0.5', '1_1', '2_0.5', '5_0.5']
-key_list = [ '1_1', '2_0.5', '2_1']
-ratio_list = ['25%','50%','75%']
-for kk in ratio_list:
-    for k in key_list:
-        df_50[k+'_'+kk] = iou_des_dict[k][kk]
-df_50.round(3)
 
 import pandas as pd
 ap_res = {
