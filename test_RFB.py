@@ -114,7 +114,7 @@ def test_net(save_folder, net, detector, cuda, testset, transform, max_per_image
             c_dets = np.hstack((c_bboxes, c_scores[:, np.newaxis])).astype(
                 np.float32, copy=False)
 
-            keep = nms(c_dets, 0.35, force_cpu=args.cpu)
+            keep = nms(c_dets, 0.45, force_cpu=args.cpu)
             c_dets = c_dets[keep, :]
             all_boxes[j][i] = c_dets
         if max_per_image > 0:
