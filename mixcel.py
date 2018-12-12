@@ -39,7 +39,7 @@ from utils.box_utils import jaccard
 # iou2_2_max = torch.max(jaccard(gt.double(), priors.double(),), 1)[0]
 
 iou_static = {}
-iou_param = [(1,1), (1.25,.8), (1.5,.65), (2,.5),(4,.25)]
+iou_param = [(1,1), (1.25,.8), (1.5,.65), (2,.5)]
 param_name_list = []
 for alpha,beta in iou_param:
     param_name_list.append("{}_{}".format(alpha, beta))
@@ -50,42 +50,40 @@ iou_static['gt_area'] = (gt[:,2] - gt[:,0]) * (gt[:,3] - gt[:,1])
 iou_df = pd.DataFrame.from_dict(iou_static)
 
 bin = np.concatenate((np.arange(0,0.1-1e-5,0.01),np.arange(0.1,0.5-1e-5,0.05),np.arange(0.5,1+1e-5,0.1)))
-# labels = [np.mean(bin[i:i+2]).round(3) for i in range(bin.shape[0]-1)]
-# iou_df['size_index']=pd.cut(iou_df['gt_area'],bin, labels=labels)
+bin = [0, .02, .06, .2, .4, 1]
+labels = [np.mean(bin[i:i+2]).round(3) for i in range(len(bin)-1)]
+iou_df['size_index']=pd.cut(iou_df['gt_area'],bin, labels=labels)
 iou_df['size_range']=pd.cut(iou_df['gt_area'],bin)
-iou_des_dict = {}
+iou_des = {}
 for ii in iou_df.columns[:5]:
-    iou_des_dict[ii] = iou_df.groupby('size_range')[ii].describe()
-    iou_des_dict[ii].insert(loc=0, column='ratio',
-        value=iou_des_dict[ii]['count'].div(iou_des_dict[ii]['count'].sum()))
-    iou_des_dict[ii].insert(loc=0, column='cumsum',
-        value=iou_des_dict[ii]['ratio'].cumsum())
-
-ax = sns.violinplot(x="size_index", y="2_0.5", data=iou_df);plt.show()
-ax = sns.boxplot(x="size_index", y="2_0.5", data=iou_df)
-ax = sns.swarmplot(x="size_index", y="2_0.5", data=iou_df, color=".25");plt.show()
-
-import pandas as pd
-import seaborn as sns
-import numpy as np
-import sys,os
+    iou_des[ii] = iou_df.groupby('size_range')[ii].describe()
+    iou_des[ii].insert(loc=0, column='ratio',
+        value=iou_des[ii]['count'].div(iou_des[ii]['count'].sum()))
+    iou_des[ii].insert(loc=0, column='cumsum',
+        value=iou_des[ii]['ratio'].cumsum())
 
 # subplot
 df_50 = pd.DataFrame()
 df_50['ratio']=iou_des['1_1']['ratio']
 df_50['cumsum']=iou_des['1_1']['cumsum']
 ratio_list = ['50%']
-for kk in ratio_list:
-    for k in param_name_list:
-        df_50[k+'_'+kk] = iou_des[k][kk]
+for param_name in param_name_list:
+    for ratio in ratio_list:
+        df_50[param_name+'_'+ratio] = iou_des[param_name][ratio]
 df_50.round(3)
 fig_num = 2
 f, axes = plt.subplots(fig_num, fig_num, figsize=(9,9), sharex=True)
 sns.despine(left=True)
-for i in range(1,10):
-    sns.boxplot(x="size_index", y=iou_df.columns[i], data=iou_df,  \
-        ax=axes[(i-1)//fig_num,(i-1)%fig_num])
+for i in range(4):
+    sns.boxplot(x="size_range", y=iou_df.columns[i], data=iou_df,  \
+        ax=axes[(i-1)//fig_num,(i-1)%fig_num]).set_title(iou_df.columns[i])
 plt.show()
+
+
+ax = sns.violinplot(x="size_index", y="2_0.5", data=iou_df);plt.show()
+ax = sns.boxplot(x="size_index", y="2_0.5", data=iou_df)
+ax = sns.swarmplot(x="size_index", y="2_0.5", data=iou_df, color=".25");plt.show()
+
 
 import pandas as pd
 ap_res = {

@@ -296,7 +296,7 @@ class VOCDetection(data.Dataset):
                                 name+'.txt')
         cachedir = os.path.join(self.root, 'annotations_cache')
 
-        iou_param = [(1,1), (1.25, .8),(1.5, .65), (2,.5), (2.5, .4)]
+        iou_param = [(1,1), (1.25, .8),(1.5, .65), (2,.5)]
         param_name_list = ['-'.join([str(xx) for xx in x]) for x in iou_param]
         thres_list = [0.5]
         size_list = ['small', 'medium', 'large']

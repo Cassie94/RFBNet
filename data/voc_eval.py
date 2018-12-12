@@ -242,12 +242,14 @@ def voc_eval(detpath,
                        (BBGT[:, 3] - BBGT[:, 1] + 1.) + (1 - alpha - beta) * inters)
                 overlaps = inters / uni
                 ovmax = np.max(overlaps)
+                gt_match_ratio = inters / \
+                    ((BBGT[:, 2] - BBGT[:, 0] + 1.) * (BBGT[:, 3] - BBGT[:, 1] + 1.))
                 jmax = np.argmax(overlaps)
                 obj_size[param_name][d] = R['size'][jmax]
                 # Statistic the max_score or max_iou for  each gt box
                 if ovmax > 0.01:
                     if not R['det'][param_name][jmax]:
-                        gt_iou[param_name][jmax] = ovmax
+                        gt_iou[param_name][jmax] = gt_match_ratio
                         R['det'][param_name][jmax] = 1
                 if ovmax > gt_temp_iou[param_name][jmax]:
                     gt_temp_iou[param_name][jmax] = ovmax
