@@ -250,6 +250,7 @@ def voc_eval(detpath,
                 if ovmax > 0.01:
                     if not R['det'][param_name][jmax]:
                         gt_iou[param_name][jmax] = gt_match_ratio[jmax]
+                        print(gt_match_ratio[jmax])
                         R['det'][param_name][jmax] = 1
                 if ovmax > gt_temp_iou[param_name][jmax]:
                     gt_temp_iou[param_name][jmax] = ovmax
