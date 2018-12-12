@@ -158,7 +158,7 @@ def voc_eval(detpath,
         max_score, max_overlap, temp_max_iou = ( {} for i in range(3))
         for param_name in param_name_list:
             for xx in [max_score, max_overlap, temp_max_iou]:
-                xx[param_name] = [-1.] * len(R)
+                xx[param_name] = [0.] * len(R)
             det_index[imagename][param_name] = {}
             nms_count[param_name] = {}
             det[param_name] = [False] * len(R)
@@ -250,7 +250,7 @@ def voc_eval(detpath,
                 if ovmax > 0.01:
                     if not R['det'][param_name][jmax]:
                         gt_iou[param_name][jmax] = gt_match_ratio[jmax]
-                        print(gt_match_ratio[jmax])
+                        # print(gt_match_ratio[jmax])
                         R['det'][param_name][jmax] = 1
                 if ovmax > gt_temp_iou[param_name][jmax]:
                     gt_temp_iou[param_name][jmax] = ovmax
